@@ -1,6 +1,9 @@
 {
   "name": "com.communitycenter.adsintegration",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Ads Integration",
-  "unity": "2022.1"
+  "unity": "2022.1",
+  "dependencies": {
+    "com.gitamend.improvedtimers": "1.0.2"
+  }
 }
