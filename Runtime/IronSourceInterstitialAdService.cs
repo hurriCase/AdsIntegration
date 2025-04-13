@@ -1,4 +1,5 @@
-﻿using AdsIntegration.Runtime.Base;
+﻿using System;
+using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using ImprovedTimers;
 using PrimeTween;
@@ -9,6 +10,8 @@ namespace AdsIntegration.Runtime
 {
     internal sealed class IronSourceInterstitialAdService : IInterstitialAdService
     {
+        public event Action<string> OnInterstitialAdShowStarted;
+
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
         private readonly bool _debugLogging;
@@ -45,7 +48,7 @@ namespace AdsIntegration.Runtime
 
         public void LoadAd()
         {
-            if (_adInitializer.IsInitialized == false || IsAdReady() || _isAdLoading)
+            if (_adInitializer.IsInitialized is false || IsAdReady() || _isAdLoading)
                 return;
 
             if (_debugLogging)
@@ -59,11 +62,9 @@ namespace AdsIntegration.Runtime
 
         public bool CanShowAd()
         {
-            var canShow = _adInitializer.IsInitialized &&
-                          IsAdReady() &&
-                          _interstitialTimer is { IsRunning: false };
+            var canShow = _adInitializer.IsInitialized && IsAdReady() && _interstitialTimer is { IsRunning: false };
 
-            if (canShow == false && _debugLogging)
+            if (canShow is false && _debugLogging)
                 Debug.Log("[IronSourceInterstitialAdService] Interstitial cannot be shown: " +
                           $"Initialized: {_adInitializer.IsInitialized}, " +
                           $"Ad ready: {IsAdReady()}, " +
@@ -81,6 +82,8 @@ namespace AdsIntegration.Runtime
             _interstitialAd.ShowAd();
             _interstitialTimer.Reset();
             _interstitialTimer.Start();
+
+            OnInterstitialAdShowStarted?.Invoke(_interstitialAd.AdUnitId);
         }
 
         private void OnInterstitialAdDisplayFailed(LevelPlayAdDisplayInfoError displayError)

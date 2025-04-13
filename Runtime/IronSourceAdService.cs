@@ -6,28 +6,34 @@ using UnityEngine.SceneManagement;
 
 namespace AdsIntegration.Runtime
 {
-    /// <summary>
-    /// Implementation of IAdService using IronSource SDK
-    /// </summary>
     public sealed class IronSourceAdService : IAdService, IDisposable
     {
-        public event Action<bool> OnRewardedAdAvailabilityChanged;
         public event Action OnInitialized;
         public event Action<string> OnInitializationFailed;
+        public event Action<bool> OnRewardedAdAvailabilityChanged;
+        public event Action<string> OnRewardedAdShowStarted;
+        public event Action<string> OnRewardedAdRewarded;
+        public event Action<string> OnInterstitialAdShowStarted;
 
         private readonly AdServiceConfig _config;
         private readonly bool _debugLogging;
         private readonly bool _testMode;
+        private readonly IAdImpressionTracker _adImpressionTracker;
 
         private IAdInitializer _adInitializer;
         private IRewardedAdService _rewardedAdService;
         private IInterstitialAdService _interstitialAdService;
 
-        internal IronSourceAdService(AdServiceConfig config, bool debugLogging, bool testMode)
+        internal IronSourceAdService(
+            AdServiceConfig config,
+            bool debugLogging,
+            bool testMode,
+            IAdImpressionTracker adImpressionTracker)
         {
             _config = config;
             _debugLogging = debugLogging;
             _testMode = testMode;
+            _adImpressionTracker = adImpressionTracker;
         }
 
         public void Initialize()
@@ -43,15 +49,30 @@ namespace AdsIntegration.Runtime
             _adInitializer.OnInitializationFailed += HandleInitializationFailed;
 
             _rewardedAdService.OnAdStatusChanged += HandleRewardedAdStatusChanged;
+            _rewardedAdService.OnRewardedAdShowStarted += HandleRewardedAdShowStarted;
+            _rewardedAdService.OnRewardedAdRewarded += HandleRewardedAdRewarded;
+            _interstitialAdService.OnInterstitialAdShowStarted += HandleInterstitialAdShowStarted;
 
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             Application.focusChanged += OnApplicationFocusChanged;
 
+            IronSourceEvents.onImpressionDataReadyEvent += ImpressionDataReadyEvent;
+
             _adInitializer.Init();
 
             if (_testMode && _debugLogging)
                 Debug.Log("[IronSourceAdService] Test mode enabled");
+        }
+
+        private void ImpressionDataReadyEvent(IronSourceImpressionData impressionData)
+        {
+            Debug.Log("unity-script: ImpressionDataReadyEvent impressionData = " + impressionData);
+
+            if (impressionData == null)
+                return;
+
+            _adImpressionTracker?.TrackAdImpression(impressionData);
         }
 
         private void HandleInitializationCompleted()
@@ -81,33 +102,49 @@ namespace AdsIntegration.Runtime
             OnRewardedAdAvailabilityChanged?.Invoke(available);
         }
 
-        public bool ShowRewardedAd(Enum placement, Action onRewarded)
+        private void HandleRewardedAdShowStarted(string placementName)
         {
-            string placementName = placement.GetPlacementName();
-            return ShowRewardedAd(placementName, onRewarded);
+            if (_debugLogging)
+                Debug.Log($"[IronSourceAdService] Rewarded ad show started: {placementName}");
+
+            OnRewardedAdShowStarted?.Invoke(placementName);
         }
+
+        private void HandleRewardedAdRewarded(string placementName)
+        {
+            if (_debugLogging)
+                Debug.Log($"[IronSourceAdService] Rewarded ad show ended: {placementName}");
+
+            OnRewardedAdRewarded?.Invoke(placementName);
+        }
+
+        private void HandleInterstitialAdShowStarted(string adUnitId)
+        {
+            if (_debugLogging)
+                Debug.Log($"[IronSourceAdService] Interstitial ad show started: {adUnitId}");
+
+            OnInterstitialAdShowStarted?.Invoke(adUnitId);
+        }
+
+        public bool ShowRewardedAd(Enum placement, Action onRewarded)
+            => ShowRewardedAd(placement.GetPlacementName(), onRewarded);
 
         public bool ShowRewardedAd(string placementName, Action onRewarded)
         {
             if (_adInitializer.IsInitialized is false || IsRewardedAdAvailable() is false)
             {
                 if (_debugLogging)
-                    Debug.LogWarning($"[IronSourceAdService] Cannot show rewarded ad. Initialized: {_adInitializer.IsInitialized}, Ad ready: {IsRewardedAdAvailable()}");
+                    Debug.LogWarning("[IronSourceAdService] Cannot show rewarded ad. Initialized:" +
+                                     $" {_adInitializer.IsInitialized}, Ad ready: {IsRewardedAdAvailable()}");
                 return false;
             }
 
-            var rewardType = FindRewardTypeForPlacement(placementName);
-
             if (_debugLogging)
-                Debug.Log($"[IronSourceAdService] Showing rewarded ad for placement: {placementName}, reward type: {rewardType}");
+                Debug.Log("[IronSourceAdService] Showing rewarded ad for placement: {placementName}");
 
-            _rewardedAdService.ShowAd(placementName, rewardType, onRewarded);
+            _rewardedAdService.ShowAd(placementName, onRewarded);
+
             return true;
-        }
-
-        private string FindRewardTypeForPlacement(string placementName)
-        {
-            return _config.FindRewardTypeForPlacement(placementName);
         }
 
         public bool IsRewardedAdAvailable() => _rewardedAdService != null && _rewardedAdService.IsAdReady();
@@ -139,9 +176,6 @@ namespace AdsIntegration.Runtime
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
         {
-            if (_debugLogging)
-                Debug.Log($"[IronSourceAdService] Scene loaded: {scene.name}, reloading ads if needed");
-
             if (_rewardedAdService.IsAdReady() is false)
                 _rewardedAdService.LoadAd();
 
@@ -151,9 +185,6 @@ namespace AdsIntegration.Runtime
 
         private void OnApplicationFocusChanged(bool hasFocus)
         {
-            if (_debugLogging)
-                Debug.Log($"[IronSourceAdService] Application focus changed: {hasFocus}");
-
             IronSource.Agent.onApplicationPause(hasFocus is false);
 
             if (hasFocus is false)
@@ -170,17 +201,19 @@ namespace AdsIntegration.Runtime
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
             Application.focusChanged -= OnApplicationFocusChanged;
+            IronSourceEvents.onImpressionDataReadyEvent -= ImpressionDataReadyEvent;
 
             _adInitializer.OnInitializationCompleted -= HandleInitializationCompleted;
             _adInitializer.OnInitializationFailed -= HandleInitializationFailed;
             _rewardedAdService.OnAdStatusChanged -= HandleRewardedAdStatusChanged;
+            _rewardedAdService.OnRewardedAdShowStarted -= HandleRewardedAdShowStarted;
+            _rewardedAdService.OnRewardedAdRewarded -= HandleRewardedAdRewarded;
+            _interstitialAdService.OnInterstitialAdShowStarted -= HandleInterstitialAdShowStarted;
 
             _adInitializer?.Dispose();
             _rewardedAdService?.Dispose();
             _interstitialAdService?.Dispose();
-
-            if (_debugLogging)
-                Debug.Log("[IronSourceAdService] Disposed");
+            _adImpressionTracker?.Dispose();
         }
     }
 }

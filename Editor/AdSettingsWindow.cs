@@ -52,10 +52,13 @@ namespace AdsIntegration.Editor
             _interstitialAdUnitIdProperty = _serializedObject.FindField(nameof(AdServiceConfig.InterstitialAdUnitId));
             _timeBetweenInterstitialsProperty =
                 _serializedObject.FindField(nameof(AdServiceConfig.TimeBetweenInterstitials));
+
             _maxInterstitialLoadAttemptsProperty =
                 _serializedObject.FindField(nameof(AdServiceConfig.MaxInterstitialLoadAttempts));
+
             _maxRewardedLoadAttemptsProperty =
                 _serializedObject.FindField(nameof(AdServiceConfig.MaxRewardedLoadAttempts));
+
             _retryLoadDelayProperty = _serializedObject.FindField(nameof(AdServiceConfig.RetryLoadDelay));
             _placementDefinitionsProperty = _serializedObject.FindField(nameof(AdServiceConfig.PlacementDefinitions));
             _placementEnumTypeProperty = _serializedObject.FindField(nameof(AdServiceConfig.PlacementEnumType));
@@ -93,10 +96,13 @@ namespace AdsIntegration.Editor
             EditorGUILayout.LabelField("Ad Settings", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_timeBetweenInterstitialsProperty,
                 new GUIContent("Time Between Interstitials"));
+
             EditorGUILayout.PropertyField(_maxInterstitialLoadAttemptsProperty,
                 new GUIContent("Max Interstitial Load Attempts"));
+
             EditorGUILayout.PropertyField(_maxRewardedLoadAttemptsProperty,
                 new GUIContent("Max Rewarded Load Attempts"));
+
             EditorGUILayout.PropertyField(_retryLoadDelayProperty, new GUIContent("Retry Load Delay"));
             EditorGUILayout.Space(15);
 
@@ -109,7 +115,8 @@ namespace AdsIntegration.Editor
             {
                 if (_settings.GetPlacementEnumType() != null)
                     EditorGUILayout.HelpBox(
-                        "Placements are being managed by the enum type above. Manual edits will be overwritten when the enum is applied.",
+                        "Placements are being managed by the enum type above. " +
+                        "Manual edits will be overwritten when the enum is applied.",
                         MessageType.Warning);
 
                 EditorGUILayout.PropertyField(_placementDefinitionsProperty, true);
@@ -144,7 +151,8 @@ namespace AdsIntegration.Editor
         {
             EditorGUILayout.LabelField("Enum Placement Configuration", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Select an enum type to use for placement definitions. This provides type safety and IntelliSense support.",
+                "Select an enum type to use for placement definitions." +
+                " This provides type safety and IntelliSense support.",
                 MessageType.Info);
 
             _selectedEnumType = AdPlacementEditorUtility.ShowPlacementEnumTypesDropdown(_selectedEnumType);
@@ -159,7 +167,8 @@ namespace AdsIntegration.Editor
             if (placementDefinitions.Count <= 0)
             {
                 EditorGUILayout.HelpBox(
-                    $"No placement attributes found in {_selectedEnumType.Name}. Make sure to add [Placement] attributes to your enum values.",
+                    $"No placement attributes found in {_selectedEnumType.Name}." +
+                    $" Make sure to add [Placement] attributes to your enum values.",
                     MessageType.Warning);
                 return;
             }
@@ -172,10 +181,6 @@ namespace AdsIntegration.Editor
                 {
                     EditorGUILayout.LabelField(placement.PlacementName, EditorStyles.boldLabel,
                         GUILayout.Width(150));
-                    EditorGUILayout.LabelField($"Reward: {placement.RewardType}", GUILayout.Width(150));
-
-                    if (string.IsNullOrEmpty(placement.Description) is false)
-                        EditorGUILayout.LabelField(placement.Description);
                 }
             }
 
@@ -187,8 +192,10 @@ namespace AdsIntegration.Editor
                 return;
 
             Undo.RecordObject(_settings, "Update Ad Placement Enum Type");
+
             _settings.SetPlacementEnumType(_selectedEnumType);
             _placementEnumTypeProperty.stringValue = _selectedEnumType.AssemblyQualifiedName;
+
             EditorUtility.SetDirty(_settings);
             _serializedObject.Update();
         }

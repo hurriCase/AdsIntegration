@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace AdsIntegration.Runtime.Config
@@ -8,89 +7,58 @@ namespace AdsIntegration.Runtime.Config
     /// <summary>
     /// Extension methods for working with placement enums
     /// </summary>
-    public static class PlacementExtensions
+    internal static class PlacementExtensions
     {
-        private static readonly Dictionary<Type, Dictionary<Enum, PlacementAttribute>> AttributeCache = new();
+        private static readonly Dictionary<Type, bool> _placementEnumCache = new();
 
         /// <summary>
-        /// Gets the placement name for an enum value (which is the enum value's name)
+        /// Gets all placement definitions from an enum type.
         /// </summary>
-        public static string GetPlacementName(this Enum placement)
+        /// <param name="enumType">The enum type to scan for placements.</param>
+        /// <returns>A list of PlacementDefinition objects.</returns>
+        /// <exception cref="ArgumentException">Thrown if the type is not an enum or not marked with PlacementAttribute.</exception>
+        internal static List<PlacementDefinition> GetPlacementDefinitions(Type enumType)
         {
-            return placement.ToString();
-        }
+            if (enumType.IsEnum is false)
+                throw new ArgumentException("[PlacementExtensions::GetPlacementDefinitions] " +
+                                            $"Type {enumType.Name} is not an enum.");
 
-        /// <summary>
-        /// Gets the reward type associated with a placement enum value
-        /// </summary>
-        public static string GetRewardType(this Enum placement)
-        {
-            var attribute = GetPlacementAttribute(placement);
-            return attribute?.RewardType ?? placement.ToString();
-        }
-
-        /// <summary>
-        /// Gets the description associated with a placement enum value
-        /// </summary>
-        public static string GetDescription(this Enum placement)
-        {
-            var attribute = GetPlacementAttribute(placement);
-            return attribute?.Description ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Gets all placement definitions from an enum type
-        /// </summary>
-        public static List<PlacementDefinition> GetPlacementDefinitions(Type enumType)
-        {
-            if (!enumType.IsEnum)
-            {
-                throw new ArgumentException($"Type {enumType.Name} is not an enum.");
-            }
+            if (IsPlacementEnum(enumType) is false)
+                throw new ArgumentException("[PlacementExtensions::GetPlacementDefinitions] " +
+                                            $"Type {enumType.Name} is not marked with the PlacementAttribute.");
 
             var result = new List<PlacementDefinition>();
 
             foreach (Enum value in Enum.GetValues(enumType))
             {
                 var placementName = value.ToString();
-                var attribute = GetPlacementAttribute(value);
-
-                if (attribute != null)
-                {
-                    result.Add(new PlacementDefinition(
-                        placementName,
-                        attribute.RewardType,
-                        attribute.Description
-                    ));
-                }
+                result.Add(new PlacementDefinition(placementName));
             }
 
             return result;
         }
 
-        private static PlacementAttribute GetPlacementAttribute(Enum enumValue)
+        /// <summary>
+        /// Gets the placement name for an enum value.
+        /// </summary>
+        /// <param name="placement">The enum value representing a placement.</param>
+        /// <returns>The string representation of the enum value to use as the placement name.</returns>
+        internal static string GetPlacementName(this Enum placement) => placement.ToString();
+
+        /// <summary>
+        /// Checks if an enum type is marked with the PlacementAttribute.
+        /// </summary>
+        /// <param name="enumType">The enum type to check.</param>
+        /// <returns>True if the enum type is marked with PlacementAttribute, otherwise false.</returns>
+        private static bool IsPlacementEnum(Type enumType)
         {
-            var enumType = enumValue.GetType();
+            if (_placementEnumCache.TryGetValue(enumType, out var isPlacementEnum))
+                return isPlacementEnum;
 
-            // Check if we've already cached this enum type
-            if (!AttributeCache.TryGetValue(enumType, out var attributeMap))
-            {
-                attributeMap = new Dictionary<Enum, PlacementAttribute>();
-                AttributeCache[enumType] = attributeMap;
+            isPlacementEnum = enumType.GetCustomAttribute<PlacementAttribute>() != null;
+            _placementEnumCache[enumType] = isPlacementEnum;
 
-                // Cache all values for this enum type
-                foreach (Enum value in Enum.GetValues(enumType))
-                {
-                    var field = enumType.GetField(value.ToString());
-                    var attribute = field.GetCustomAttribute<PlacementAttribute>();
-                    if (attribute != null)
-                    {
-                        attributeMap[value] = attribute;
-                    }
-                }
-            }
-
-            return attributeMap.TryGetValue(enumValue, out var result) ? result : null;
+            return isPlacementEnum;
         }
     }
 }

@@ -7,9 +7,6 @@ using UnityEngine;
 
 namespace AdsIntegration.Editor
 {
-    /// <summary>
-    /// Editor utility for finding and displaying enum types with placement attributes
-    /// </summary>
     internal static class AdPlacementEditorUtility
     {
         private static readonly List<Type> _enumTypes = new();

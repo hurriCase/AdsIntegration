@@ -5,16 +5,19 @@ using UnityEngine;
 
 namespace AdsIntegration.Runtime.Builder
 {
-    /// <summary>
-    /// Builder implementation for creating IronSource ad service instances
-    /// </summary>
-    public sealed class IronSourceAdServiceBuilder : IAdServiceBuilder
+    internal sealed class IronSourceAdServiceBuilder : IAdServiceBuilder
     {
         private bool _debugLogging;
         private bool _testMode;
+        private IAdImpressionTracker _adImpressionTracker;
         private Action _onInitializedCallback;
         private Action<string> _onInitFailedCallback;
         private Action<bool> _onRewardedAdAvailabilityChangedCallback;
+
+        private Action<string> _onRewardedAdShowStartedCallback;
+        private Action<string> _onRewardedAdRewardedCallback;
+        private Action<string> _onInterstitialAdShowStartedCallback;
+        private Action<string> _onInterstitialAdShowEndedCallback;
 
         public IAdServiceBuilder WithDebugLogging()
         {
@@ -25,6 +28,12 @@ namespace AdsIntegration.Runtime.Builder
         public IAdServiceBuilder WithTestMode()
         {
             _testMode = true;
+            return this;
+        }
+
+        public IAdServiceBuilder WithAnalyticsService(IAdImpressionTracker adImpressionTracker)
+        {
+            _adImpressionTracker = adImpressionTracker;
             return this;
         }
 
@@ -46,13 +55,31 @@ namespace AdsIntegration.Runtime.Builder
             return this;
         }
 
+        public IAdServiceBuilder OnRewardedAdShowStarted(Action<string> callback)
+        {
+            _onRewardedAdShowStartedCallback = callback;
+            return this;
+        }
+
+        public IAdServiceBuilder OnRewardedAdRewarded(Action<string> callback)
+        {
+            _onRewardedAdRewardedCallback = callback;
+            return this;
+        }
+
+        public IAdServiceBuilder OnInterstitialAdShowStarted(Action<string> callback)
+        {
+            _onInterstitialAdShowStartedCallback = callback;
+            return this;
+        }
+
         public IAdService Build()
         {
             var config = AdServiceConfig.GetOrCreateSettings();
 
             ValidateConfiguration(config);
 
-            var adService = new IronSourceAdService(config, _debugLogging, _testMode);
+            var adService = new IronSourceAdService(config, _debugLogging, _testMode, _adImpressionTracker);
 
             if (_onInitializedCallback != null)
                 adService.OnInitialized += _onInitializedCallback;
@@ -63,19 +90,31 @@ namespace AdsIntegration.Runtime.Builder
             if (_onRewardedAdAvailabilityChangedCallback != null)
                 adService.OnRewardedAdAvailabilityChanged += _onRewardedAdAvailabilityChangedCallback;
 
+            if (_onRewardedAdShowStartedCallback != null)
+                adService.OnRewardedAdShowStarted += _onRewardedAdShowStartedCallback;
+
+            if (_onRewardedAdRewardedCallback != null)
+                adService.OnRewardedAdRewarded += _onRewardedAdRewardedCallback;
+
+            if (_onInterstitialAdShowStartedCallback != null)
+                adService.OnInterstitialAdShowStarted += _onInterstitialAdShowStartedCallback;
+
             return adService;
         }
 
         private void ValidateConfiguration(AdServiceConfig config)
         {
             if (string.IsNullOrEmpty(config.AppKey))
-                Debug.LogError("[IronSourceAdServiceBuilder] App key is empty in the configuration.");
+                Debug.LogError("[IronSourceAdServiceBuilder::ValidateConfiguration]" +
+                               " App key is empty in the configuration.");
 
             if (string.IsNullOrEmpty(config.RewardedAdUnitId))
-                Debug.LogError("[IronSourceAdServiceBuilder] Rewarded ad unit ID is empty in the configuration.");
+                Debug.LogError("[IronSourceAdServiceBuilder::ValidateConfiguration]" +
+                               " Rewarded ad unit ID is empty in the configuration.");
 
             if (string.IsNullOrEmpty(config.InterstitialAdUnitId))
-                Debug.LogError("[IronSourceAdServiceBuilder] Interstitial ad unit ID is empty in the configuration.");
+                Debug.LogError("[IronSourceAdServiceBuilder::ValidateConfiguration]" +
+                               " Interstitial ad unit ID is empty in the configuration.");
         }
     }
 }

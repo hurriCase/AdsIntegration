@@ -9,7 +9,7 @@ namespace AdsIntegration.Runtime.Config
     /// <summary>
     /// Scriptable object to store advertising service configuration data
     /// </summary>
-    public sealed class AdServiceConfig : ScriptableObject
+    internal sealed class AdServiceConfig : ScriptableObject
     {
         [field: Header("IronSource Settings")]
         [field: SerializeField] internal string AppKey { get; private set; }
@@ -30,12 +30,9 @@ namespace AdsIntegration.Runtime.Config
 
         private const string SettingsPath = "Assets/AdsIntegration/Resources/AdServiceConfig.asset";
 
-        /// <summary>
-        /// Sets the placement enum type and loads all placement definitions from it
-        /// </summary>
-        public void SetPlacementEnumType(Type enumType)
+        internal void SetPlacementEnumType(Type enumType)
         {
-            if (!enumType.IsEnum)
+            if (enumType.IsEnum is false)
             {
                 Debug.LogError($"Type {enumType.Name} is not an enum.");
                 return;
@@ -45,31 +42,8 @@ namespace AdsIntegration.Runtime.Config
             PlacementDefinitions = PlacementExtensions.GetPlacementDefinitions(enumType);
         }
 
-        /// <summary>
-        /// Gets the placement enum type if one is set
-        /// </summary>
-        public Type GetPlacementEnumType()
-        {
-            if (string.IsNullOrEmpty(PlacementEnumType))
-                return null;
-
-            return Type.GetType(PlacementEnumType);
-        }
-
-        /// <summary>
-        /// Finds the reward type for a placement
-        /// </summary>
-        internal string FindRewardTypeForPlacement(string placementName)
-        {
-            foreach (var placement in PlacementDefinitions)
-            {
-                if (placement.PlacementName == placementName)
-                    return placement.RewardType;
-            }
-
-            Debug.LogWarning($"No reward type found for placement: {placementName}, using placement name as reward type");
-            return placementName;
-        }
+        internal Type GetPlacementEnumType()
+            => string.IsNullOrEmpty(PlacementEnumType) ? null : Type.GetType(PlacementEnumType);
 
         internal static AdServiceConfig GetOrCreateSettings()
         {
