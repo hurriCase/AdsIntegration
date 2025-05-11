@@ -28,7 +28,10 @@ namespace AdsIntegration.Runtime.Config
         [field: Header("Enum Placement Type")]
         [field: SerializeField] internal string PlacementEnumType { get; private set; }
 
-        private const string SettingsPath = "Assets/AdsIntegration/Resources/AdServiceConfig.asset";
+        internal static bool IsSettingsExist => Resources.Load<AdServiceConfig>(ResourceSettingsPath);
+
+        private const string FullSettingsPath = "Assets/Resources/" + ResourceSettingsPath;
+        private const string ResourceSettingsPath = "AdsIntegration/AdServiceConfig.asset";
 
         internal void SetPlacementEnumType(Type enumType)
         {
@@ -47,22 +50,26 @@ namespace AdsIntegration.Runtime.Config
 
         internal static AdServiceConfig GetOrCreateSettings()
         {
-            var settings = AssetDatabase.LoadAssetAtPath<AdServiceConfig>(SettingsPath);
+            var settings = Resources.Load<AdServiceConfig>($"{nameof(AdServiceConfig)}.asset");
+            if (settings)
+                return settings;
+
+#if UNITY_EDITOR
+            settings = AssetDatabase.LoadAssetAtPath<AdServiceConfig>(FullSettingsPath);
             if (settings)
                 return settings;
 
             settings = CreateInstance<AdServiceConfig>();
 
-            var directory = Path.GetDirectoryName(SettingsPath);
+            var directory = Path.GetDirectoryName(FullSettingsPath);
             if (string.IsNullOrEmpty(directory) is false && Directory.Exists(directory) is false)
                 Directory.CreateDirectory(directory);
 
-            AssetDatabase.CreateAsset(settings, SettingsPath);
+            AssetDatabase.CreateAsset(settings, FullSettingsPath);
             AssetDatabase.SaveAssets();
 
             return settings;
+#endif
         }
-
-        internal static bool SettingsExist() => AssetDatabase.LoadAssetAtPath<AdServiceConfig>(SettingsPath);
     }
 }

@@ -29,7 +29,7 @@ namespace AdsIntegration.Editor
         {
             EditorApplication.delayCall += () =>
             {
-                if (AdServiceConfig.SettingsExist() is false)
+                if (AdServiceConfig.IsSettingsExist is false)
                     AdServiceConfig.GetOrCreateSettings();
             };
         }
