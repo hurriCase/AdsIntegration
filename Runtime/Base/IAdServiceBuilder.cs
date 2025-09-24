@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace AdsIntegration.Runtime.Base
 {
@@ -8,28 +9,9 @@ namespace AdsIntegration.Runtime.Base
     /// <remarks>
     /// Use this interface to configure and build ad service instances with the desired settings and callbacks.
     /// </remarks>
+    [UsedImplicitly]
     public interface IAdServiceBuilder
     {
-        /// <summary>
-        /// Enables debug logging for the ad service.
-        /// </summary>
-        /// <returns>The builder instance for method chaining.</returns>
-        /// <remarks>
-        /// When enabled, the ad service will log detailed information about its operations to the Unity console.
-        /// This is useful for debugging integration issues during development.
-        /// </remarks>
-        IAdServiceBuilder WithDebugLogging();
-
-        /// <summary>
-        /// Enables test mode for the ad service.
-        /// </summary>
-        /// <returns>The builder instance for method chaining.</returns>
-        /// <remarks>
-        /// In test mode, the ad service will use test ad units and may show special UI for testing purposes.
-        /// This should only be used during development and testing, not in production builds.
-        /// </remarks>
-        IAdServiceBuilder WithTestMode();
-
         /// <summary>
         /// Configures the ad service to use the specified impression tracker for analytics.
         /// </summary>
@@ -39,6 +21,7 @@ namespace AdsIntegration.Runtime.Base
         /// The impression tracker will receive callbacks when ads are displayed, allowing revenue
         /// and other metrics to be tracked in analytics services.
         /// </remarks>
+        [UsedImplicitly]
         IAdServiceBuilder WithAnalyticsService(IAdImpressionTracker adImpressionTracker);
 
         /// <summary>
@@ -46,6 +29,7 @@ namespace AdsIntegration.Runtime.Base
         /// </summary>
         /// <param name="callback">The callback to invoke.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        [UsedImplicitly]
         IAdServiceBuilder OnInitialized(Action callback);
 
         /// <summary>
@@ -53,6 +37,7 @@ namespace AdsIntegration.Runtime.Base
         /// </summary>
         /// <param name="callback">The callback to invoke with the error message.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        [UsedImplicitly]
         IAdServiceBuilder OnInitializationFailed(Action<string> callback);
 
         /// <summary>
@@ -63,6 +48,7 @@ namespace AdsIntegration.Runtime.Base
         /// <remarks>
         /// The boolean parameter indicates whether rewarded ads are available (true) or not (false).
         /// </remarks>
+        [UsedImplicitly]
         IAdServiceBuilder OnRewardedAdAvailabilityChanged(Action<bool> callback);
 
         /// <summary>
@@ -70,6 +56,7 @@ namespace AdsIntegration.Runtime.Base
         /// </summary>
         /// <param name="callback">The callback to invoke with the placement name.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        [UsedImplicitly]
         IAdServiceBuilder OnRewardedAdShowStarted(Action<string> callback);
 
         /// <summary>
@@ -77,6 +64,7 @@ namespace AdsIntegration.Runtime.Base
         /// </summary>
         /// <param name="callback">The callback to invoke with the placement name.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        [UsedImplicitly]
         IAdServiceBuilder OnRewardedAdRewarded(Action<string> callback);
 
         /// <summary>
@@ -84,6 +72,7 @@ namespace AdsIntegration.Runtime.Base
         /// </summary>
         /// <param name="callback">The callback to invoke with the ad unit ID.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        [UsedImplicitly]
         IAdServiceBuilder OnInterstitialAdShowStarted(Action<string> callback);
 
         /// <summary>
@@ -94,6 +83,7 @@ namespace AdsIntegration.Runtime.Base
         /// The returned service is not yet initialized. You must call Initialize() on the returned instance
         /// to begin the initialization process.
         /// </remarks>
+        [UsedImplicitly]
         IAdService Build();
     }
 }

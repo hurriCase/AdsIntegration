@@ -7,8 +7,6 @@ namespace AdsIntegration.Runtime.Builder
 {
     internal sealed class IronSourceAdServiceBuilder : IAdServiceBuilder
     {
-        private bool _debugLogging;
-        private bool _testMode;
         private IAdImpressionTracker _adImpressionTracker;
         private Action _onInitializedCallback;
         private Action<string> _onInitFailedCallback;
@@ -18,18 +16,6 @@ namespace AdsIntegration.Runtime.Builder
         private Action<string> _onRewardedAdRewardedCallback;
         private Action<string> _onInterstitialAdShowStartedCallback;
         private Action<string> _onInterstitialAdShowEndedCallback;
-
-        public IAdServiceBuilder WithDebugLogging()
-        {
-            _debugLogging = true;
-            return this;
-        }
-
-        public IAdServiceBuilder WithTestMode()
-        {
-            _testMode = true;
-            return this;
-        }
 
         public IAdServiceBuilder WithAnalyticsService(IAdImpressionTracker adImpressionTracker)
         {
@@ -79,7 +65,7 @@ namespace AdsIntegration.Runtime.Builder
 
             ValidateConfiguration(config);
 
-            var adService = new IronSourceAdService(config, _debugLogging, _testMode, _adImpressionTracker);
+            var adService = new IronSourceAdService(config, _adImpressionTracker);
 
             if (_onInitializedCallback != null)
                 adService.OnInitialized += _onInitializedCallback;

@@ -3,7 +3,6 @@ using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using PrimeTween;
 using Unity.Services.LevelPlay;
-using UnityEngine;
 
 namespace AdsIntegration.Runtime
 {
@@ -15,7 +14,6 @@ namespace AdsIntegration.Runtime
 
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
-        private readonly bool _debugLogging;
 
         private Action _currentRewardCallback;
 
@@ -23,11 +21,10 @@ namespace AdsIntegration.Runtime
         private bool _isAdLoading;
         private int _loadAttemptCount;
 
-        public IronSourceRewardedAdService(IAdInitializer adInitializer, AdServiceConfig config, bool debugLogging)
+        public IronSourceRewardedAdService(IAdInitializer adInitializer, AdServiceConfig config)
         {
             _adInitializer = adInitializer;
             _config = config;
-            _debugLogging = debugLogging;
 
             _adInitializer.OnInitializationCompleted += Initialize;
         }
@@ -50,8 +47,7 @@ namespace AdsIntegration.Runtime
             if (_adInitializer.IsInitialized is false || IsAdReady() || _isAdLoading)
                 return;
 
-            if (_debugLogging)
-                Debug.Log("[IronSourceRewardedAdService] Starting to load rewarded ad");
+            Logger.Log("[IronSourceRewardedAdService::LoadAd] Starting to load rewarded ad");
 
             _isAdLoading = true;
             _rewardedAd.LoadAd();
@@ -63,17 +59,13 @@ namespace AdsIntegration.Runtime
         {
             if (_adInitializer.IsInitialized is false || IsAdReady() is false)
             {
-                if (_debugLogging)
-                    Debug.LogWarning(
-                        "[IronSourceRewardedAdService] Cannot show rewarded ad. Initialized: " +
-                        $"{_adInitializer.IsInitialized}, Ad ready: {IsAdReady()}");
+                Logger.LogWarning("[IronSourceRewardedAdService::ShowAd] Cannot show rewarded ad. Initialized: " +
+                                  $"{_adInitializer.IsInitialized}, Ad ready: {IsAdReady()}");
 
                 return;
             }
 
-            if (_debugLogging)
-                Debug.Log(
-                    $"[IronSourceRewardedAdService] Showing rewarded ad with placement: {placementName}");
+            Logger.Log($"[IronSourceRewardedAdService::ShowAd] Showing rewarded ad with placement: {placementName}");
 
             _currentRewardCallback = callback;
 
@@ -84,8 +76,8 @@ namespace AdsIntegration.Runtime
 
         private void OnRewardAdClosed(LevelPlayAdInfo levelPlayAdInfo)
         {
-            if (_debugLogging)
-                Debug.Log($"[IronSourceRewardedAdService] Rewarded ad closed, unit: {levelPlayAdInfo.AdUnitName}");
+            Logger.Log($"[IronSourceRewardedAdService::OnRewardAdClosed] " +
+                       $"Rewarded ad closed, unit: {levelPlayAdInfo.AdUnitName}");
 
             _currentRewardCallback = null;
 
@@ -96,10 +88,9 @@ namespace AdsIntegration.Runtime
 
         private void OnRewardAdLoadFailed(LevelPlayAdError levelPlayAdError)
         {
-            if (_debugLogging)
-                Debug.LogError(
-                    $"[IronSourceRewardedAdService] Rewarded ad load failed: {levelPlayAdError.ErrorMessage}," +
-                    $" unit: {levelPlayAdError.AdUnitId}");
+            Logger.LogError($"[IronSourceRewardedAdService::OnRewardAdLoadFailed] " +
+                            $"Rewarded ad load failed: {levelPlayAdError.ErrorMessage}," +
+                            $" unit: {levelPlayAdError.AdUnitId}");
 
             _isAdLoading = false;
 
@@ -115,10 +106,8 @@ namespace AdsIntegration.Runtime
 
         private void OnRewardAdLoaded(LevelPlayAdInfo levelPlayAdInfo)
         {
-            if (_debugLogging)
-                Debug.Log(
-                    "[IronSourceRewardedAdService] Rewarded ad loaded successfully, " +
-                    $"unit: {levelPlayAdInfo.AdUnitName}, placement: {levelPlayAdInfo.PlacementName}");
+            Logger.Log("[IronSourceRewardedAdService::OnRewardAdLoaded] Rewarded ad loaded successfully, " +
+                       $"unit: {levelPlayAdInfo.AdUnitName}, placement: {levelPlayAdInfo.PlacementName}");
 
             _isAdLoading = false;
             _loadAttemptCount = 0;
@@ -128,27 +117,28 @@ namespace AdsIntegration.Runtime
 
         private void OnRewardAdDisplayFailed(LevelPlayAdDisplayInfoError displayError)
         {
-            if (_debugLogging)
-                Debug.LogError(
-                    $"[IronSourceRewardedAdService] Rewarded ad display failed: {displayError.LevelPlayError}");
+            Logger.LogError($"[IronSourceRewardedAdService::OnRewardAdDisplayFailed] " +
+                            $"Rewarded ad display failed: {displayError.LevelPlayError}");
 
             _currentRewardCallback = null;
         }
 
         private void OnAdRewarded(LevelPlayAdInfo adInfo, LevelPlayReward reward)
         {
-            if (_debugLogging)
-                Debug.Log($"[IronSourceRewardedAdService] Reward granted: {reward.Name}, amount: {reward.Amount}");
+            Logger.Log($"[IronSourceRewardedAdService::OnAdRewarded] " +
+                       $"Reward granted: {reward.Name}, amount: {reward.Amount}");
 
-            if (_currentRewardCallback != null)
+            if (_currentRewardCallback is null)
             {
-                _currentRewardCallback.Invoke();
-                _currentRewardCallback = null;
-
-                OnRewardedAdRewarded?.Invoke(adInfo.PlacementName);
+                Logger.LogWarning("[IronSourceRewardedAdService::OnAdRewarded] " +
+                                  "Reward callback was null when reward was granted");
+                return;
             }
-            else if (_debugLogging)
-                Debug.LogWarning("[IronSourceRewardedAdService] Reward callback was null when reward was granted");
+
+            _currentRewardCallback.Invoke();
+            _currentRewardCallback = null;
+
+            OnRewardedAdRewarded?.Invoke(adInfo.PlacementName);
         }
 
         public void Dispose()
@@ -166,8 +156,7 @@ namespace AdsIntegration.Runtime
 
             _rewardedAd.Dispose();
 
-            if (_debugLogging)
-                Debug.Log("[IronSourceRewardedAdService] Disposed");
+            Logger.Log("[IronSourceRewardedAdService::Dispose] Disposed");
         }
     }
 }

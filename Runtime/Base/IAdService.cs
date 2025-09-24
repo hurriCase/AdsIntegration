@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace AdsIntegration.Runtime.Base
 {
@@ -6,41 +7,48 @@ namespace AdsIntegration.Runtime.Base
     /// Primary interface for interacting with the ad service. Provides methods for initializing,
     /// showing ads, and checking ad availability.
     /// </summary>
+    [UsedImplicitly]
     public interface IAdService
     {
         /// <summary>
         /// Event that fires when the ad service has been successfully initialized.
         /// </summary>
+        [UsedImplicitly]
         event Action OnInitialized;
 
         /// <summary>
         /// Event that fires when the ad service initialization fails.
         /// </summary>
         /// <remarks>The string parameter contains the error message.</remarks>
+        [UsedImplicitly]
         event Action<string> OnInitializationFailed;
 
         /// <summary>
         /// Event that fires when the availability of rewarded ads changes.
         /// </summary>
         /// <remarks>The boolean parameter indicates whether rewarded ads are available (true) or not (false).</remarks>
+        [UsedImplicitly]
         event Action<bool> OnRewardedAdAvailabilityChanged;
 
         /// <summary>
         /// Event that fires when a rewarded ad begins playing.
         /// </summary>
         /// <remarks>The string parameter contains the placement name.</remarks>
+        [UsedImplicitly]
         event Action<string> OnRewardedAdShowStarted;
 
         /// <summary>
         /// Event that fires when a rewarded ad completes and the reward should be granted.
         /// </summary>
         /// <remarks>The string parameter contains the placement name.</remarks>
+        [UsedImplicitly]
         event Action<string> OnRewardedAdRewarded;
 
         /// <summary>
         /// Event that fires when an interstitial ad begins playing.
         /// </summary>
         /// <remarks>The string parameter contains the ad unit ID.</remarks>
+        [UsedImplicitly]
         event Action<string> OnInterstitialAdShowStarted;
 
         /// <summary>
@@ -50,7 +58,8 @@ namespace AdsIntegration.Runtime.Base
         /// This should be called early in your application lifecycle, typically during app startup.
         /// The <see cref="OnInitialized"/> event will fire when initialization completes successfully.
         /// </remarks>
-        void Initialize();
+        [UsedImplicitly]
+        void Init();
 
         /// <summary>
         /// Shows a rewarded ad for the specified placement enum.
@@ -61,6 +70,7 @@ namespace AdsIntegration.Runtime.Base
         /// <remarks>
         /// The placement enum should be decorated with the PlacementAttribute/>.
         /// </remarks>
+        [UsedImplicitly]
         bool ShowRewardedAd(Enum placement, Action onRewarded);
 
         /// <summary>
@@ -69,12 +79,14 @@ namespace AdsIntegration.Runtime.Base
         /// <param name="placementName">The string name of the placement.</param>
         /// <param name="onRewarded">Callback that will be invoked when the user earns the reward.</param>
         /// <returns>True if the ad was shown, false otherwise (e.g., no ad available).</returns>
+        [UsedImplicitly]
         bool ShowRewardedAd(string placementName, Action onRewarded);
 
         /// <summary>
         /// Checks if a rewarded ad is currently available to show.
         /// </summary>
         /// <returns>True if a rewarded ad is available, false otherwise.</returns>
+        [UsedImplicitly]
         bool IsRewardedAdAvailable();
 
         /// <summary>
@@ -85,15 +97,7 @@ namespace AdsIntegration.Runtime.Base
         /// Interstitial ads have cooldown periods between displays. This method will
         /// automatically respect those cooldowns.
         /// </remarks>
+        [UsedImplicitly]
         bool TryShowInterstitial();
-
-        /// <summary>
-        /// Enables test mode for ad networks.
-        /// </summary>
-        /// <remarks>
-        /// This should only be used during development and testing.
-        /// It may display test UI and use test ad units.
-        /// </remarks>
-        void EnableTestMode();
     }
 }

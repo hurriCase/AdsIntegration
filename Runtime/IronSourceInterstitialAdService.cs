@@ -4,7 +4,6 @@ using AdsIntegration.Runtime.Config;
 using ImprovedTimers;
 using PrimeTween;
 using Unity.Services.LevelPlay;
-using UnityEngine;
 
 namespace AdsIntegration.Runtime
 {
@@ -14,26 +13,23 @@ namespace AdsIntegration.Runtime
 
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
-        private readonly bool _debugLogging;
 
         private LevelPlayInterstitialAd _interstitialAd;
         private CountdownTimer _interstitialTimer;
         private bool _isAdLoading;
         private int _loadAttemptCount;
 
-        public IronSourceInterstitialAdService(IAdInitializer adInitializer, AdServiceConfig config, bool debugLogging)
+        public IronSourceInterstitialAdService(IAdInitializer adInitializer, AdServiceConfig config)
         {
             _adInitializer = adInitializer;
             _config = config;
-            _debugLogging = debugLogging;
 
             _adInitializer.OnInitializationCompleted += Initialize;
         }
 
         private void Initialize()
         {
-            if (_debugLogging)
-                Debug.Log("[IronSourceInterstitialAdService] Initializing interstitial ad service");
+            Logger.Log("[IronSourceInterstitialAdService::Initialize] Initializing interstitial ad service");
 
             _interstitialTimer = new CountdownTimer(_config.TimeBetweenInterstitials);
             _interstitialAd = new LevelPlayInterstitialAd(_config.InterstitialAdUnitId);
@@ -51,8 +47,7 @@ namespace AdsIntegration.Runtime
             if (_adInitializer.IsInitialized is false || IsAdReady() || _isAdLoading)
                 return;
 
-            if (_debugLogging)
-                Debug.Log("[IronSourceInterstitialAdService] Starting to load interstitial ad");
+            Logger.Log("[IronSourceInterstitialAdService::LoadAd] Starting to load interstitial ad");
 
             _isAdLoading = true;
             _interstitialAd.LoadAd();
@@ -64,20 +59,19 @@ namespace AdsIntegration.Runtime
         {
             var canShow = _adInitializer.IsInitialized && IsAdReady() && _interstitialTimer is { IsRunning: false };
 
-            if (canShow is false && _debugLogging)
-                Debug.Log("[IronSourceInterstitialAdService] Interstitial cannot be shown: " +
-                          $"Initialized: {_adInitializer.IsInitialized}, " +
-                          $"Ad ready: {IsAdReady()}, " +
-                          $"Timer running: {_interstitialTimer?.IsRunning}, " +
-                          $"Remaining time: {_interstitialTimer?.CurrentTime}");
+            if (canShow is false)
+                Logger.Log("[IronSourceInterstitialAdService::CanShowAd] Interstitial cannot be shown: " +
+                           $"Initialized: {_adInitializer.IsInitialized}, " +
+                           $"Ad ready: {IsAdReady()}, " +
+                           $"Timer running: {_interstitialTimer?.IsRunning}, " +
+                           $"Remaining time: {_interstitialTimer?.CurrentTime}");
 
             return canShow;
         }
 
         public void ShowAd()
         {
-            if (_debugLogging)
-                Debug.Log("[IronSourceInterstitialAdService] Showing interstitial ad");
+            Logger.Log("[IronSourceInterstitialAdService::ShowAd] Showing interstitial ad");
 
             _interstitialAd.ShowAd();
             _interstitialTimer.Reset();
@@ -88,16 +82,16 @@ namespace AdsIntegration.Runtime
 
         private void OnInterstitialAdDisplayFailed(LevelPlayAdDisplayInfoError displayError)
         {
-            if (_debugLogging)
-                Debug.LogError(
-                    $"[IronSourceInterstitialAdService] Interstitial ad display failed: {displayError.LevelPlayError}");
+            Logger.LogError("[IronSourceInterstitialAdService::OnInterstitialAdDisplayFailed] " +
+                            $"Interstitial ad display failed: {displayError.LevelPlayError}");
         }
 
         private void OnInterstitialAdLoaded(LevelPlayAdInfo adInfo)
         {
-            if (_debugLogging)
-                Debug.Log(
-                    $"[IronSourceInterstitialAdService] Interstitial ad loaded successfully, unit: {adInfo.AdUnitName}, placement: {adInfo.PlacementName}");
+            Logger.Log("[IronSourceInterstitialAdService::OnInterstitialAdLoaded] " +
+                       $"Interstitial ad loaded successfully, " +
+                       $"unit: {adInfo.AdUnitName}, " +
+                       $"placement: {adInfo.PlacementName}");
 
             _isAdLoading = false;
             _loadAttemptCount = 0;
@@ -105,9 +99,8 @@ namespace AdsIntegration.Runtime
 
         private void OnInterstitialAdLoadFailed(LevelPlayAdError adError)
         {
-            if (_debugLogging)
-                Debug.LogError(
-                    $"[IronSourceInterstitialAdService] Interstitial ad load failed: {adError.ErrorMessage}, unit: {adError.AdUnitId}");
+            Logger.LogError("[IronSourceInterstitialAdService::OnInterstitialAdLoadFailed] " +
+                            $"Interstitial ad load failed: {adError.ErrorMessage}, unit: {adError.AdUnitId}");
 
             _isAdLoading = false;
 
@@ -121,8 +114,8 @@ namespace AdsIntegration.Runtime
 
         private void OnInterstitialAdClosed(LevelPlayAdInfo adInfo)
         {
-            if (_debugLogging)
-                Debug.Log($"[IronSourceInterstitialAdService] Interstitial ad closed, unit: {adInfo.AdUnitName}");
+            Logger.Log($"[IronSourceInterstitialAdService::OnInterstitialAdClosed] " +
+                       $"Interstitial ad closed, unit: {adInfo.AdUnitName}");
 
             LoadAd();
         }
@@ -143,8 +136,7 @@ namespace AdsIntegration.Runtime
 
             _interstitialAd.Dispose();
 
-            if (_debugLogging)
-                Debug.Log("[IronSourceInterstitialAdService] Disposed");
+            Logger.Log("[IronSourceInterstitialAdService::Dispose] Disposed");
         }
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace AdsIntegration.Runtime.Config
 {
+    /// <inheritdoc />
     /// <summary>
     /// Scriptable object to store advertising service configuration data
     /// </summary>

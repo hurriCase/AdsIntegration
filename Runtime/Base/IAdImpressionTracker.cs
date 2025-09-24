@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace AdsIntegration.Runtime.Base
 {
@@ -9,6 +10,7 @@ namespace AdsIntegration.Runtime.Base
     /// Implementations of this interface should handle reporting ad impression data
     /// to analytics services or other tracking systems.
     /// </remarks>
+    [UsedImplicitly]
     public interface IAdImpressionTracker : IDisposable
     {
         /// <summary>
@@ -19,6 +21,7 @@ namespace AdsIntegration.Runtime.Base
         /// This method should be called whenever an ad impression event is received from IronSource.
         /// It handles processing and forwarding the impression data to appropriate analytics services.
         /// </remarks>
+        [UsedImplicitly]
         void TrackAdImpression(IronSourceImpressionData impressionData);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AdsIntegration.Runtime.Base;
+using JetBrains.Annotations;
 
 namespace AdsIntegration.Runtime.Builder
 {
@@ -8,6 +9,7 @@ namespace AdsIntegration.Runtime.Builder
     /// <remarks>
     /// This class provides the entry point for creating and configuring ad services in your application.
     /// </remarks>
+    [UsedImplicitly]
     public static class AdServiceFactory
     {
         /// <summary>
@@ -18,6 +20,7 @@ namespace AdsIntegration.Runtime.Builder
         /// Use the returned builder to configure the ad service with your desired settings and callbacks,
         /// then call Build() to create the service instance.
         /// </remarks>
+        [UsedImplicitly]
         public static IAdServiceBuilder CreateIronSourceBuilder() => new IronSourceAdServiceBuilder();
     }
 }
