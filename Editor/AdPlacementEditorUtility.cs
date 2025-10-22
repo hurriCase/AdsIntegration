@@ -21,7 +21,7 @@ namespace AdsIntegration.Editor
                 try
                 {
                     var types = assembly.GetTypes()
-                        .Where(type => type.IsEnum && type.GetFields().Any(fieldInfo =>
+                        .Where(static type => type.IsEnum && type.GetFields().Any(static fieldInfo =>
                             fieldInfo.GetCustomAttributes(typeof(PlacementAttribute), false).Length > 0))
                         .ToList();
 
@@ -40,7 +40,7 @@ namespace AdsIntegration.Editor
         {
             EnsureInitialized();
 
-            var options = _enumTypes.Select(type => type.FullName).ToList();
+            var options = _enumTypes.Select(static type => type.FullName).ToList();
             options.Insert(0, "None");
 
             var currentIndex = currentType == null ? 0 : options.IndexOf(currentType.FullName);

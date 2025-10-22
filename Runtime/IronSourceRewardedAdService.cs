@@ -99,7 +99,7 @@ namespace AdsIntegration.Runtime
             if (_loadAttemptCount >= _config.MaxRewardedLoadAttempts)
                 return;
 
-            Tween.Delay(this, _config.RetryLoadDelay, service => service.LoadAd());
+            Tween.Delay(this, _config.RetryLoadDelay, static service => service.LoadAd());
 
             _loadAttemptCount++;
         }

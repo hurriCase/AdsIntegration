@@ -27,7 +27,7 @@ namespace AdsIntegration.Editor
         [InitializeOnLoadMethod]
         private static void Initialize()
         {
-            EditorApplication.delayCall += () =>
+            EditorApplication.delayCall += static () =>
             {
                 if (AdServiceConfig.IsSettingsExist is false)
                     AdServiceConfig.GetOrCreateSettings();
