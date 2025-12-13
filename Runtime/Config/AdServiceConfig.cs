@@ -10,7 +10,7 @@ namespace AdsIntegration.Runtime.Config
     /// <summary>
     /// Scriptable object to store advertising service configuration data
     /// </summary>
-    [Resource()]
+    [Resource(FullSettingsPath, AssetName, ResourceSettingsPath)]
     internal sealed class AdServiceConfig : SingletonScriptableObject<AdServiceConfig>
     {
         [field: Header("IronSource Settings")]
@@ -31,7 +31,8 @@ namespace AdsIntegration.Runtime.Config
         [field: SerializeField] internal string PlacementEnumType { get; private set; }
 
         private const string FullSettingsPath = "Assets/Resources/" + ResourceSettingsPath;
-        private const string ResourceSettingsPath = "AdsIntegration/AdServiceConfig.asset";
+        private const string ResourceSettingsPath = "AdsIntegration";
+        private const string AssetName = "AdServiceConfig";
 
         internal void SetPlacementEnumType(Type enumType)
         {
