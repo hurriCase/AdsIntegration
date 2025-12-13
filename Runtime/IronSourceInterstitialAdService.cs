@@ -80,10 +80,11 @@ namespace AdsIntegration.Runtime
             OnInterstitialAdShowStarted?.Invoke(_interstitialAd.AdUnitId);
         }
 
-        private void OnInterstitialAdDisplayFailed(LevelPlayAdDisplayInfoError displayError)
+        private void OnInterstitialAdDisplayFailed(LevelPlayAdInfo levelPlayAdInfo, LevelPlayAdError displayError)
         {
             Logger.LogError("[IronSourceInterstitialAdService::OnInterstitialAdDisplayFailed] " +
-                            $"Interstitial ad display failed: {displayError.LevelPlayError}");
+                            $"Interstitial ad display failed with {levelPlayAdInfo} info and " +
+                            $"{displayError.ErrorMessage} error");
         }
 
         private void OnInterstitialAdLoaded(LevelPlayAdInfo adInfo)

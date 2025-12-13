@@ -3,6 +3,7 @@ using System.Diagnostics;
 using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using JetBrains.Annotations;
+using Unity.Services.LevelPlay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -51,7 +52,7 @@ namespace AdsIntegration.Runtime
 
             Application.focusChanged += OnApplicationFocusChanged;
 
-            IronSourceEvents.onImpressionDataReadyEvent += ImpressionDataReadyEvent;
+            LevelPlay.OnImpressionDataReady += ImpressionDataReadyEvent;
 
             _adInitializer.Init();
         }
@@ -88,7 +89,7 @@ namespace AdsIntegration.Runtime
             return true;
         }
 
-        private void ImpressionDataReadyEvent(IronSourceImpressionData impressionData)
+        private void ImpressionDataReadyEvent(LevelPlayImpressionData impressionData)
         {
             Logger.Log("\"[IronSourceAdService::ImpressionDataReadyEvent] " +
                        $"ImpressionDataReadyEvent impressionData = {impressionData}");
@@ -155,7 +156,7 @@ namespace AdsIntegration.Runtime
 
         private void OnApplicationFocusChanged(bool hasFocus)
         {
-            IronSource.Agent.onApplicationPause(hasFocus is false);
+            LevelPlay.SetPauseGame(hasFocus is false);
 
             if (hasFocus is false)
                 return;
@@ -174,7 +175,7 @@ namespace AdsIntegration.Runtime
             {
                 Logger.Log("[IronSourceAdService::EnableTestMode] Launching test suite");
 
-                IronSource.Agent.launchTestSuite();
+                LevelPlay.LaunchTestSuite();
                 return;
             }
 
@@ -185,7 +186,7 @@ namespace AdsIntegration.Runtime
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
             Application.focusChanged -= OnApplicationFocusChanged;
-            IronSourceEvents.onImpressionDataReadyEvent -= ImpressionDataReadyEvent;
+            LevelPlay.OnImpressionDataReady -= ImpressionDataReadyEvent;
 
             _adInitializer.OnInitializationCompleted -= HandleInitializationCompleted;
             _adInitializer.OnInitializationFailed -= HandleInitializationFailed;

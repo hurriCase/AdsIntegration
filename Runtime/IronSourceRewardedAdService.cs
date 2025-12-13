@@ -115,10 +115,11 @@ namespace AdsIntegration.Runtime
             OnAdStatusChanged?.Invoke(true);
         }
 
-        private void OnRewardAdDisplayFailed(LevelPlayAdDisplayInfoError displayError)
+        private void OnRewardAdDisplayFailed(LevelPlayAdInfo levelPlayAdInfo, LevelPlayAdError displayError)
         {
             Logger.LogError($"[IronSourceRewardedAdService::OnRewardAdDisplayFailed] " +
-                            $"Rewarded ad display failed: {displayError.LevelPlayError}");
+                            $"Rewarded ad display failed with {levelPlayAdInfo} info and " +
+                            $"{displayError.ErrorMessage} error");
 
             _currentRewardCallback = null;
         }

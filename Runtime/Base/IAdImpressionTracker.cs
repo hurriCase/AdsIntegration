@@ -1,5 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
+using Unity.Services.LevelPlay;
 
 namespace AdsIntegration.Runtime.Base
 {
@@ -22,6 +23,6 @@ namespace AdsIntegration.Runtime.Base
         /// It handles processing and forwarding the impression data to appropriate analytics services.
         /// </remarks>
         [UsedImplicitly]
-        void TrackAdImpression(IronSourceImpressionData impressionData);
+        void TrackAdImpression(LevelPlayImpressionData impressionData);
     }
 }
