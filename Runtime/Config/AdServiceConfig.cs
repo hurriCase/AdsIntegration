@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using UnityEditor;
+using CustomUtils.Runtime.AssetLoader;
+using CustomUtils.Runtime.CustomTypes.Singletons;
 using UnityEngine;
 
 namespace AdsIntegration.Runtime.Config
@@ -10,7 +10,8 @@ namespace AdsIntegration.Runtime.Config
     /// <summary>
     /// Scriptable object to store advertising service configuration data
     /// </summary>
-    internal sealed class AdServiceConfig : ScriptableObject
+    [Resource()]
+    internal sealed class AdServiceConfig : SingletonScriptableObject<AdServiceConfig>
     {
         [field: Header("IronSource Settings")]
         [field: SerializeField] internal string AppKey { get; private set; }
@@ -29,8 +30,6 @@ namespace AdsIntegration.Runtime.Config
         [field: Header("Enum Placement Type")]
         [field: SerializeField] internal string PlacementEnumType { get; private set; }
 
-        internal static bool IsSettingsExist => Resources.Load<AdServiceConfig>(ResourceSettingsPath);
-
         private const string FullSettingsPath = "Assets/Resources/" + ResourceSettingsPath;
         private const string ResourceSettingsPath = "AdsIntegration/AdServiceConfig.asset";
 
@@ -48,29 +47,5 @@ namespace AdsIntegration.Runtime.Config
 
         internal Type GetPlacementEnumType()
             => string.IsNullOrEmpty(PlacementEnumType) ? null : Type.GetType(PlacementEnumType);
-
-        internal static AdServiceConfig GetOrCreateSettings()
-        {
-            var settings = Resources.Load<AdServiceConfig>($"{nameof(AdServiceConfig)}.asset");
-            if (settings)
-                return settings;
-
-#if UNITY_EDITOR
-            settings = AssetDatabase.LoadAssetAtPath<AdServiceConfig>(FullSettingsPath);
-            if (settings)
-                return settings;
-
-            settings = CreateInstance<AdServiceConfig>();
-
-            var directory = Path.GetDirectoryName(FullSettingsPath);
-            if (string.IsNullOrEmpty(directory) is false && Directory.Exists(directory) is false)
-                Directory.CreateDirectory(directory);
-
-            AssetDatabase.CreateAsset(settings, FullSettingsPath);
-            AssetDatabase.SaveAssets();
-
-            return settings;
-#endif
-        }
     }
 }

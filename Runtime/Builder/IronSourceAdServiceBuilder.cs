@@ -61,11 +61,11 @@ namespace AdsIntegration.Runtime.Builder
 
         public IAdService Build()
         {
-            var config = AdServiceConfig.GetOrCreateSettings();
+            var adServiceConfig = AdServiceConfig.Instance;
 
-            ValidateConfiguration(config);
+            ValidateConfiguration(adServiceConfig);
 
-            var adService = new IronSourceAdService(config, _adImpressionTracker);
+            var adService = new IronSourceAdService(adServiceConfig, _adImpressionTracker);
 
             if (_onInitializedCallback != null)
                 adService.OnInitialized += _onInitializedCallback;

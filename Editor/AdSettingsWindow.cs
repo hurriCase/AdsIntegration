@@ -8,7 +8,7 @@ namespace AdsIntegration.Editor
     internal sealed class AdSettingsWindow : EditorWindow
     {
         private SerializedObject _serializedObject;
-        private AdServiceConfig _settings;
+        private AdServiceConfig AdServiceConfig => AdServiceConfig.Instance;
 
         private SerializedProperty _appKeyProperty;
         private SerializedProperty _rewardedAdUnitIdProperty;
@@ -24,16 +24,6 @@ namespace AdsIntegration.Editor
         private Type _selectedEnumType;
         private bool _showManualPlacementEditor = true;
 
-        [InitializeOnLoadMethod]
-        private static void Initialize()
-        {
-            EditorApplication.delayCall += static () =>
-            {
-                if (AdServiceConfig.IsSettingsExist is false)
-                    AdServiceConfig.GetOrCreateSettings();
-            };
-        }
-
         [MenuItem("Tools/Ads Integration Settings")]
         public static void ShowWindow()
         {
@@ -44,8 +34,7 @@ namespace AdsIntegration.Editor
 
         private void OnEnable()
         {
-            _settings = AdServiceConfig.GetOrCreateSettings();
-            _serializedObject = new SerializedObject(_settings);
+            _serializedObject = new SerializedObject(AdServiceConfig);
 
             _appKeyProperty = _serializedObject.FindField(nameof(AdServiceConfig.AppKey));
             _rewardedAdUnitIdProperty = _serializedObject.FindField(nameof(AdServiceConfig.RewardedAdUnitId));
@@ -63,12 +52,12 @@ namespace AdsIntegration.Editor
             _placementDefinitionsProperty = _serializedObject.FindField(nameof(AdServiceConfig.PlacementDefinitions));
             _placementEnumTypeProperty = _serializedObject.FindField(nameof(AdServiceConfig.PlacementEnumType));
 
-            _selectedEnumType = _settings.GetPlacementEnumType();
+            _selectedEnumType = AdServiceConfig.GetPlacementEnumType();
         }
 
         private void OnGUI()
         {
-            if (_serializedObject == null || !_settings)
+            if (_serializedObject == null || !AdServiceConfig)
             {
                 OnEnable();
 
@@ -113,7 +102,7 @@ namespace AdsIntegration.Editor
             _showManualPlacementEditor = EditorGUILayout.Foldout(_showManualPlacementEditor, "Manual Placement Editor");
             if (_showManualPlacementEditor)
             {
-                if (_settings.GetPlacementEnumType() != null)
+                if (AdServiceConfig.GetPlacementEnumType() != null)
                     EditorGUILayout.HelpBox(
                         "Placements are being managed by the enum type above. " +
                         "Manual edits will be overwritten when the enum is applied.",
@@ -132,7 +121,7 @@ namespace AdsIntegration.Editor
             if (GUILayout.Button("Save Settings", GUILayout.Width(150), GUILayout.Height(30)))
             {
                 _serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(_settings);
+                EditorUtility.SetDirty(AdServiceConfig);
                 AssetDatabase.SaveAssets();
 
                 EditorUtility.DisplayDialog("Ads Integration Settings", "Settings saved successfully!", "OK");
@@ -144,7 +133,7 @@ namespace AdsIntegration.Editor
             EditorGUILayout.Space(5);
 
             if (_serializedObject.ApplyModifiedProperties())
-                EditorUtility.SetDirty(_settings);
+                EditorUtility.SetDirty(AdServiceConfig);
         }
 
         private void DrawPlacementEnumSection()
@@ -191,12 +180,12 @@ namespace AdsIntegration.Editor
             if (GUILayout.Button("Apply This Enum Type") is false)
                 return;
 
-            Undo.RecordObject(_settings, "Update Ad Placement Enum Type");
+            Undo.RecordObject(AdServiceConfig, "Update Ad Placement Enum Type");
 
-            _settings.SetPlacementEnumType(_selectedEnumType);
+            AdServiceConfig.SetPlacementEnumType(_selectedEnumType);
             _placementEnumTypeProperty.stringValue = _selectedEnumType.AssemblyQualifiedName;
 
-            EditorUtility.SetDirty(_settings);
+            EditorUtility.SetDirty(AdServiceConfig);
             _serializedObject.Update();
         }
     }

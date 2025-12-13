@@ -4,6 +4,7 @@
   "displayName": "Ads Integration",
   "unity": "2022.1",
   "dependencies": {
-    "com.gitamend.improvedtimers": "1.0.2"
+    "com.gitamend.improvedtimers": "1.0.2",
+    "com.firsttry.customutils": "2.2.0"
   }
 }

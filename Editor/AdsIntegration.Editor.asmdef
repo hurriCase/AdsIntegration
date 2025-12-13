@@ -2,7 +2,8 @@
     "name": "AdsIntegration.Editor",
     "rootNamespace": "AdsIntegration.Editor",
     "references": [
-        "GUID:58c722f3a5163fc428ecbf4085fa78c2"
+        "GUID:58c722f3a5163fc428ecbf4085fa78c2",
+        "GUID:e83d267d115097b489005b6b908a868a"
     ],
     "includePlatforms": [
         "Editor"
