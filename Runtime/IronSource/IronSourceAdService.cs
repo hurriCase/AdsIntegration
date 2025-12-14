@@ -3,28 +3,27 @@ using System.Diagnostics;
 using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using JetBrains.Annotations;
+using R3;
 using Unity.Services.LevelPlay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace AdsIntegration.Runtime
+namespace AdsIntegration.Runtime.IronSource
 {
-    [UsedImplicitly]
+    [PublicAPI]
     public sealed class IronSourceAdService : IAdService, IDisposable
     {
-        public event Action OnInitialized;
-        public event Action<string> OnInitializationFailed;
-        public event Action<bool> OnRewardedAdAvailabilityChanged;
-        public event Action<string> OnRewardedAdShowStarted;
-        public event Action<string> OnRewardedAdRewarded;
-        public event Action<string> OnInterstitialAdShowStarted;
-
         private readonly AdServiceConfig _config;
         private readonly IAdImpressionTracker _adImpressionTracker;
 
         private IAdInitializer _adInitializer;
         private IRewardedAdService _rewardedAdService;
         private IInterstitialAdService _interstitialAdService;
+
+        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
+        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
+
+        private IDisposable _disposable;
 
         internal IronSourceAdService(AdServiceConfig config, IAdImpressionTracker adImpressionTracker)
         {
@@ -40,13 +39,10 @@ namespace AdsIntegration.Runtime
             _rewardedAdService = new IronSourceRewardedAdService(_adInitializer, _config);
             _interstitialAdService = new IronSourceInterstitialAdService(_adInitializer, _config);
 
-            _adInitializer.OnInitializationCompleted += HandleInitializationCompleted;
-            _adInitializer.OnInitializationFailed += HandleInitializationFailed;
+            _disposable = _adInitializer.OnInitializationCompleted
+                .Subscribe(this, static (_, self) => self.EnableTestMode());
 
             _rewardedAdService.OnAdStatusChanged += HandleRewardedAdStatusChanged;
-            _rewardedAdService.OnRewardedAdShowStarted += HandleRewardedAdShowStarted;
-            _rewardedAdService.OnRewardedAdRewarded += HandleRewardedAdRewarded;
-            _interstitialAdService.OnInterstitialAdShowStarted += HandleInterstitialAdShowStarted;
 
             SceneManager.sceneLoaded += OnSceneLoaded;
 
@@ -100,49 +96,12 @@ namespace AdsIntegration.Runtime
             _adImpressionTracker?.TrackAdImpression(impressionData);
         }
 
-        private void HandleInitializationCompleted()
-        {
-            Logger.Log("[IronSourceAdService::HandleInitializationCompleted] Initialization completed");
-
-            OnInitialized?.Invoke();
-
-            EnableTestMode();
-        }
-
-        private void HandleInitializationFailed(string errorMessage)
-        {
-            Logger.LogError($"[IronSourceAdService::HandleInitializationFailed] Initialization failed: {errorMessage}");
-
-            OnInitializationFailed?.Invoke(errorMessage);
-        }
-
         private void HandleRewardedAdStatusChanged(bool available)
         {
             Logger.Log($"[IronSourceAdService::HandleRewardedAdStatusChanged] " +
                        $"Rewarded ad availability changed: {available}");
 
-            OnRewardedAdAvailabilityChanged?.Invoke(available);
-        }
-
-        private void HandleRewardedAdShowStarted(string placementName)
-        {
-            Logger.Log($"[IronSourceAdService::HandleRewardedAdShowStarted] Rewarded ad show started: {placementName}");
-
-            OnRewardedAdShowStarted?.Invoke(placementName);
-        }
-
-        private void HandleRewardedAdRewarded(string placementName)
-        {
-            Logger.Log($"[IronSourceAdService::HandleRewardedAdRewarded] Rewarded ad show ended: {placementName}");
-
-            OnRewardedAdRewarded?.Invoke(placementName);
-        }
-
-        private void HandleInterstitialAdShowStarted(string adUnitId)
-        {
-            Logger.Log($"[IronSourceAdService::HandleRewardedAdRewarded] Interstitial ad show started: {adUnitId}");
-
-            OnInterstitialAdShowStarted?.Invoke(adUnitId);
+            _rewardedAdAvailabilityChanged.OnNext(available);
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
@@ -188,17 +147,13 @@ namespace AdsIntegration.Runtime
             Application.focusChanged -= OnApplicationFocusChanged;
             LevelPlay.OnImpressionDataReady -= ImpressionDataReadyEvent;
 
-            _adInitializer.OnInitializationCompleted -= HandleInitializationCompleted;
-            _adInitializer.OnInitializationFailed -= HandleInitializationFailed;
             _rewardedAdService.OnAdStatusChanged -= HandleRewardedAdStatusChanged;
-            _rewardedAdService.OnRewardedAdShowStarted -= HandleRewardedAdShowStarted;
-            _rewardedAdService.OnRewardedAdRewarded -= HandleRewardedAdRewarded;
-            _interstitialAdService.OnInterstitialAdShowStarted -= HandleInterstitialAdShowStarted;
 
             _adInitializer?.Dispose();
             _rewardedAdService?.Dispose();
             _interstitialAdService?.Dispose();
             _adImpressionTracker?.Dispose();
+            _disposable?.Dispose();
         }
     }
 }

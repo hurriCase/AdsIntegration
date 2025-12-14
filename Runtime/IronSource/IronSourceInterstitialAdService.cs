@@ -3,9 +3,10 @@ using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using ImprovedTimers;
 using PrimeTween;
+using R3;
 using Unity.Services.LevelPlay;
 
-namespace AdsIntegration.Runtime
+namespace AdsIntegration.Runtime.IronSource
 {
     internal sealed class IronSourceInterstitialAdService : IInterstitialAdService
     {
@@ -19,12 +20,15 @@ namespace AdsIntegration.Runtime
         private bool _isAdLoading;
         private int _loadAttemptCount;
 
+        private readonly IDisposable _initializationSubscription;
+
         public IronSourceInterstitialAdService(IAdInitializer adInitializer, AdServiceConfig config)
         {
             _adInitializer = adInitializer;
             _config = config;
 
-            _adInitializer.OnInitializationCompleted += Initialize;
+            _initializationSubscription = _adInitializer.OnInitializationCompleted
+                .Subscribe(this, static (_, self) => self.Initialize());
         }
 
         private void Initialize()
@@ -76,8 +80,6 @@ namespace AdsIntegration.Runtime
             _interstitialAd.ShowAd();
             _interstitialTimer.Reset();
             _interstitialTimer.Start();
-
-            OnInterstitialAdShowStarted?.Invoke(_interstitialAd.AdUnitId);
         }
 
         private void OnInterstitialAdDisplayFailed(LevelPlayAdInfo levelPlayAdInfo, LevelPlayAdError displayError)
@@ -123,8 +125,6 @@ namespace AdsIntegration.Runtime
 
         public void Dispose()
         {
-            _adInitializer.OnInitializationCompleted -= Initialize;
-
             _interstitialTimer?.Dispose();
 
             if (_interstitialAd == null)
@@ -136,6 +136,7 @@ namespace AdsIntegration.Runtime
             _interstitialAd.OnAdClosed -= OnInterstitialAdClosed;
 
             _interstitialAd.Dispose();
+            _initializationSubscription.Dispose();
 
             Logger.Log("[IronSourceInterstitialAdService::Dispose] Disposed");
         }

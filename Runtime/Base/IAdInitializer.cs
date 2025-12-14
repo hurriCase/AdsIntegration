@@ -1,11 +1,11 @@
 ﻿using System;
+using R3;
 
 namespace AdsIntegration.Runtime.Base
 {
     internal interface IAdInitializer : IDisposable
     {
-        event Action OnInitializationCompleted;
-        event Action<string> OnInitializationFailed;
+        Observable<Unit> OnInitializationCompleted { get; }
         void Init();
         bool IsInitialized { get; }
     }

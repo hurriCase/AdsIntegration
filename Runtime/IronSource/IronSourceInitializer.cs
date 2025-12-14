@@ -1,17 +1,17 @@
-﻿using System;
-using AdsIntegration.Runtime.Base;
+﻿using AdsIntegration.Runtime.Base;
+using R3;
 using Unity.Services.LevelPlay;
 
-namespace AdsIntegration.Runtime
+namespace AdsIntegration.Runtime.IronSource
 {
     internal sealed class IronSourceInitializer : IAdInitializer
     {
-        public event Action OnInitializationCompleted;
-        public event Action<string> OnInitializationFailed;
-
         public bool IsInitialized { get; private set; }
 
         private readonly string _appKey;
+
+        public Observable<Unit> OnInitializationCompleted => _initializationCompleted;
+        private readonly Subject<Unit> _initializationCompleted = new();
 
         public IronSourceInitializer(string appKey)
         {
@@ -34,7 +34,7 @@ namespace AdsIntegration.Runtime
 
             Logger.Log("[IronSourceInitializer::SdkInitializationCompletedEvent] SDK initialized successfully");
 
-            OnInitializationCompleted?.Invoke();
+            _initializationCompleted.OnNext(Unit.Default);
         }
 
         private void SdkInitializationFailedEvent(LevelPlayInitError levelPlayInitError)
@@ -43,8 +43,6 @@ namespace AdsIntegration.Runtime
 
             Logger.LogError($"[IronSourceInitializer::SdkInitializationFailedEvent] " +
                             $"SDK initialization failed: {levelPlayInitError.ErrorMessage}");
-
-            OnInitializationFailed?.Invoke(levelPlayInitError.ErrorMessage);
         }
 
         public void Dispose()

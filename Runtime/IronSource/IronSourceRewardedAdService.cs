@@ -2,9 +2,10 @@
 using AdsIntegration.Runtime.Base;
 using AdsIntegration.Runtime.Config;
 using PrimeTween;
+using R3;
 using Unity.Services.LevelPlay;
 
-namespace AdsIntegration.Runtime
+namespace AdsIntegration.Runtime.IronSource
 {
     internal sealed class IronSourceRewardedAdService : IRewardedAdService
     {
@@ -21,12 +22,15 @@ namespace AdsIntegration.Runtime
         private bool _isAdLoading;
         private int _loadAttemptCount;
 
+        private IDisposable _initializationSubscription;
+
         public IronSourceRewardedAdService(IAdInitializer adInitializer, AdServiceConfig config)
         {
             _adInitializer = adInitializer;
             _config = config;
 
-            _adInitializer.OnInitializationCompleted += Initialize;
+            _initializationSubscription = _adInitializer.OnInitializationCompleted
+                .Subscribe(this, static (_, self) => self.Initialize());
         }
 
         private void Initialize()
@@ -144,8 +148,6 @@ namespace AdsIntegration.Runtime
 
         public void Dispose()
         {
-            _adInitializer.OnInitializationCompleted -= Initialize;
-
             if (_rewardedAd is null)
                 return;
 
@@ -156,6 +158,7 @@ namespace AdsIntegration.Runtime
             _rewardedAd.OnAdClosed -= OnRewardAdClosed;
 
             _rewardedAd.Dispose();
+            _initializationSubscription.Dispose();
 
             Logger.Log("[IronSourceRewardedAdService::Dispose] Disposed");
         }
