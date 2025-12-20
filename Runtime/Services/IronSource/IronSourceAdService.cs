@@ -8,7 +8,7 @@ using Unity.Services.LevelPlay;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace AdsIntegration.Runtime.IronSource
+namespace AdsIntegration.Runtime.Services.IronSource
 {
     [PublicAPI]
     public sealed class IronSourceAdService : IAdService, IDisposable

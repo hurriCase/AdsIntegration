@@ -4,7 +4,7 @@ using CrazyGames;
 using JetBrains.Annotations;
 using R3;
 
-namespace AdsIntegration.Runtime
+namespace AdsIntegration.Runtime.Services
 {
     [PublicAPI]
     public sealed class CrazyGamesAdService : IAdService

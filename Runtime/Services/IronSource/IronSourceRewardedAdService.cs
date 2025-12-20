@@ -5,13 +5,11 @@ using PrimeTween;
 using R3;
 using Unity.Services.LevelPlay;
 
-namespace AdsIntegration.Runtime.IronSource
+namespace AdsIntegration.Runtime.Services.IronSource
 {
     internal sealed class IronSourceRewardedAdService : IRewardedAdService
     {
         public event Action<bool> OnAdStatusChanged;
-        public event Action<string> OnRewardedAdShowStarted;
-        public event Action<string> OnRewardedAdRewarded;
 
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
@@ -22,7 +20,7 @@ namespace AdsIntegration.Runtime.IronSource
         private bool _isAdLoading;
         private int _loadAttemptCount;
 
-        private IDisposable _initializationSubscription;
+        private readonly IDisposable _initializationSubscription;
 
         public IronSourceRewardedAdService(IAdInitializer adInitializer, AdServiceConfig config)
         {
@@ -74,8 +72,6 @@ namespace AdsIntegration.Runtime.IronSource
             _currentRewardCallback = callback;
 
             _rewardedAd.ShowAd();
-
-            OnRewardedAdShowStarted?.Invoke(placementName);
         }
 
         private void OnRewardAdClosed(LevelPlayAdInfo levelPlayAdInfo)
@@ -142,8 +138,6 @@ namespace AdsIntegration.Runtime.IronSource
 
             _currentRewardCallback.Invoke();
             _currentRewardCallback = null;
-
-            OnRewardedAdRewarded?.Invoke(adInfo.PlacementName);
         }
 
         public void Dispose()

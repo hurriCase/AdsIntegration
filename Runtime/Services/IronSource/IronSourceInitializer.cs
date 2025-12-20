@@ -2,7 +2,7 @@
 using R3;
 using Unity.Services.LevelPlay;
 
-namespace AdsIntegration.Runtime.IronSource
+namespace AdsIntegration.Runtime.Services.IronSource
 {
     internal sealed class IronSourceInitializer : IAdInitializer
     {
