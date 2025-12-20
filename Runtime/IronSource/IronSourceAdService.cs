@@ -20,8 +20,8 @@ namespace AdsIntegration.Runtime.IronSource
         private IRewardedAdService _rewardedAdService;
         private IInterstitialAdService _interstitialAdService;
 
-        public ReadOnlyReactiveProperty<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
-        private readonly ReactiveProperty<bool> _rewardedAdAvailabilityChanged = new();
+        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
+        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
 
         private IDisposable _disposable;
 

@@ -9,12 +9,12 @@ namespace AdsIntegration.Runtime
     [PublicAPI]
     public sealed class CrazyGamesAdService : IAdService
     {
-        public ReadOnlyReactiveProperty<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
-        private readonly ReactiveProperty<bool> _rewardedAdAvailabilityChanged = new(true);
+        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
+        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
 
         public void Init()
         {
-            CrazySDK.Ad.HasAdblock(hasAdblock => _rewardedAdAvailabilityChanged.Value = hasAdblock is false);
+            CrazySDK.Ad.HasAdblock(hasAdblock => _rewardedAdAvailabilityChanged.OnNext(hasAdblock is false));
         }
 
         public bool ShowRewardedAd(Enum placement, Action onRewarded)

@@ -11,7 +11,7 @@ namespace AdsIntegration.Runtime.Base
     [PublicAPI]
     public interface IAdService
     {
-        ReadOnlyReactiveProperty<bool> OnRewardedAdAvailabilityChanged { get; }
+        Observable<bool> OnRewardedAdAvailabilityChanged { get; }
 
         void Init();
         bool ShowRewardedAd(Enum placement, Action onRewarded);
