@@ -6,7 +6,7 @@ using R3;
 namespace AdsIntegration.Runtime.Services
 {
     [PublicAPI]
-    internal sealed class NoneAdService : IAdService
+    public sealed class NoneAdService : IAdService
     {
         public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
         private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
