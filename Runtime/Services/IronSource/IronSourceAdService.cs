@@ -20,8 +20,8 @@ namespace AdsIntegration.Runtime.Services.IronSource
         private IRewardedAdService _rewardedAdService;
         private IInterstitialAdService _interstitialAdService;
 
-        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
-        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
+        public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _isRewardedAvailable;
+        private readonly ReactiveProperty<bool> _isRewardedAvailable = new();
 
         private IDisposable _disposable;
 
@@ -101,7 +101,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
             Logger.Log($"[IronSourceAdService::HandleRewardedAdStatusChanged] " +
                        $"Rewarded ad availability changed: {available}");
 
-            _rewardedAdAvailabilityChanged.OnNext(available);
+            _isRewardedAvailable.OnNext(available);
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
