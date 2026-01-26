@@ -9,10 +9,10 @@ using Object = UnityEngine.Object;
 namespace AdsIntegration.Runtime.Services.Azerion
 {
     [PublicAPI]
-    public sealed class AzerionAdService : IAdService
+    public sealed class AzerionAdService : IAdService, IDisposable
     {
-        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
-        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
+        public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _rewardedAdAvailabilityChanged;
+        private readonly ReactiveProperty<bool> _rewardedAdAvailabilityChanged = new(true);
 
         private Action _onRewarded;
 
@@ -40,8 +40,6 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
             return true;
         }
-
-        public bool IsRewardedAdAvailable() => true;
 
         public bool TryShowInterstitial()
         {
@@ -87,6 +85,16 @@ namespace AdsIntegration.Runtime.Services.Azerion
         private void PauseGame()
         {
             Time.timeScale = 0;
+        }
+
+        public void Dispose()
+        {
+            _rewardedAdAvailabilityChanged.Dispose();
+
+            GameDistribution.OnResumeGame -= ResumeGame;
+            GameDistribution.OnPauseGame -= PauseGame;
+            GameDistribution.OnRewardedVideoSuccess -= OnRewardedAdFinished;
+            GameDistribution.OnRewardedVideoFailure -= OnRewardedAdDisplayFailed;
         }
     }
 }

@@ -8,12 +8,11 @@ namespace AdsIntegration.Runtime.Services
     [PublicAPI]
     public sealed class NoneAdService : IAdService
     {
-        public Observable<bool> OnRewardedAdAvailabilityChanged => _rewardedAdAvailabilityChanged;
-        private readonly Subject<bool> _rewardedAdAvailabilityChanged = new();
+        public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _isRewardedAdAvailabilityChanged;
+        private readonly ReactiveProperty<bool> _isRewardedAdAvailabilityChanged = new();
 
         public void Init() { }
         public bool ShowRewardedAd(Enum placement, Action onRewarded) => false;
-        public bool IsRewardedAdAvailable() => false;
         public bool TryShowInterstitial() => false;
     }
 }
