@@ -18,9 +18,9 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
         public void Init()
         {
-            Object.Instantiate(AzerionConfiguration.Instance.GameDistributionPrefab);
+            Object.Instantiate(AzerionConfig.Instance.GameDistributionPrefab);
 
-            GameDistribution.Instance.GAME_KEY = AzerionConfiguration.Instance.GameKey;
+            GameDistribution.Instance.GAME_KEY = AzerionConfig.Instance.GameKey;
 
             GameDistribution.Instance.PreloadRewardedAd();
 

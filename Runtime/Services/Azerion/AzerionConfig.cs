@@ -4,12 +4,13 @@ using UnityEngine;
 
 namespace AdsIntegration.Runtime.Services.Azerion
 {
-    [Resource(ResourcePath, nameof(AzerionConfiguration), ResourcePath)]
-    internal sealed class AzerionConfiguration : SingletonScriptableObject<AzerionConfiguration>
+    [Resource(FullSettingsPath, nameof(AzerionConfig), ResourceSettingsPath)]
+    internal sealed class AzerionConfig : SingletonScriptableObject<AzerionConfig>
     {
         [field: SerializeField] internal GameDistribution GameDistributionPrefab { get; private set; }
         [field: SerializeField] internal string GameKey { get; private set; }
 
-        private const string ResourcePath = "Assets/Resources/Azerion/";
+        private const string FullSettingsPath = "Assets/Resources/" + ResourceSettingsPath;
+        private const string ResourceSettingsPath = "Azerion";
     }
 }
