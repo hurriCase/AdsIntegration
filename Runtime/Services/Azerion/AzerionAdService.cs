@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if AZERION
+using System;
 using AdsIntegration.Runtime.Base;
 using CrazyGames;
 using JetBrains.Annotations;
@@ -98,3 +99,4 @@ namespace AdsIntegration.Runtime.Services.Azerion
         }
     }
 }
+#endif

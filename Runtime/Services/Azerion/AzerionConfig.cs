@@ -1,4 +1,5 @@
-﻿using CustomUtils.Runtime.AssetLoader;
+﻿#if AZERION
+using CustomUtils.Runtime.AssetLoader;
 using CustomUtils.Runtime.CustomTypes.Singletons;
 using UnityEngine;
 
@@ -14,3 +15,4 @@ namespace AdsIntegration.Runtime.Services.Azerion
         private const string ResourceSettingsPath = "Azerion";
     }
 }
+#endif
