@@ -1,7 +1,6 @@
 ﻿#if AZERION
 using System;
 using AdsIntegration.Runtime.Base;
-using CrazyGames;
 using JetBrains.Annotations;
 using R3;
 using UnityEngine;
@@ -33,7 +32,7 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
         public bool ShowRewardedAd(Enum placement, Action onRewarded)
         {
-            Logger.Log("[CrazyGamesAdService::OnRewardedAdStarted] Showing Rewarded ad");
+            Logger.Log("[AzerionAdService::ShowRewardedAd] Showing Rewarded ad");
 
             _onRewarded = onRewarded;
 
@@ -50,12 +49,12 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
         private void OnRewardedAdDisplayFailed()
         {
-            Logger.LogError("[CrazyGamesAdService::OnRewardedAdDisplayFailed] Rewarded ad display failed");
+            Logger.LogError("[AzerionAdService::OnRewardedAdDisplayFailed] Rewarded ad display failed");
         }
 
         private void OnRewardedAdFinished()
         {
-            Logger.Log("[CrazyGamesAdService::OnRewardedAdFinished] Rewarded successfully finished");
+            Logger.Log("[AzerionAdService::OnRewardedAdFinished] Rewarded successfully finished");
 
             _onRewarded?.Invoke();
 
@@ -64,18 +63,12 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
         private void OnInterstitialAdStarted()
         {
-            Logger.Log("[CrazyGamesAdService::OnInterstitialAdStarted] Showing interstitial ad");
-        }
-
-        private void OnInterstitialAdDisplayFailed(SdkError error)
-        {
-            Logger.LogError("[CrazyGamesAdService::OnInterstitialAdDisplayFailed] " +
-                            $"Interstitial ad display failed with {error.message} error");
+            Logger.Log("[AzerionAdService::OnInterstitialAdStarted] Showing interstitial ad");
         }
 
         private void OnInterstitialAdFinished()
         {
-            Logger.Log("[CrazyGamesAdService::OnInterstitialAdFinished] Interstitial successfully finished");
+            Logger.Log("[AzerionAdService::OnInterstitialAdFinished] Interstitial successfully finished");
         }
 
         private void ResumeGame()
