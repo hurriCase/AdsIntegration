@@ -20,7 +20,8 @@ namespace AdsIntegration.Runtime.Services.Azerion
         public void Init()
         {
             var gameDistribution = ResourceLoader<GameDistribution>.Load(nameof(GameDistribution));
-            Object.Instantiate(gameDistribution);
+            var createdPrefab = Object.Instantiate(gameDistribution);
+            createdPrefab.name = nameof(GameDistribution);
 
             GameDistribution.Instance.GAME_KEY = AzerionConfig.Instance.GameKey;
 
