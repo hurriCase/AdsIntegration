@@ -1,6 +1,7 @@
 ﻿#if AZERION
 using System;
 using AdsIntegration.Runtime.Base;
+using CustomUtils.Runtime.AssetLoader;
 using JetBrains.Annotations;
 using R3;
 using UnityEngine;
@@ -11,14 +12,15 @@ namespace AdsIntegration.Runtime.Services.Azerion
     [PublicAPI]
     public sealed class AzerionAdService : IAdService, IDisposable
     {
-        public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _rewardedAdAvailabilityChanged;
-        private readonly ReactiveProperty<bool> _rewardedAdAvailabilityChanged = new(true);
+        public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _isRewardedAvailable;
+        private readonly ReactiveProperty<bool> _isRewardedAvailable = new(true);
 
         private Action _onRewarded;
 
         public void Init()
         {
-            Object.Instantiate(AzerionConfig.Instance.GameDistributionPrefab);
+            var gameDistribution = ResourceLoader<GameDistribution>.Load(nameof(GameDistribution));
+            Object.Instantiate(gameDistribution);
 
             GameDistribution.Instance.GAME_KEY = AzerionConfig.Instance.GameKey;
 
@@ -83,7 +85,7 @@ namespace AdsIntegration.Runtime.Services.Azerion
 
         public void Dispose()
         {
-            _rewardedAdAvailabilityChanged.Dispose();
+            _isRewardedAvailable.Dispose();
 
             GameDistribution.OnResumeGame -= ResumeGame;
             GameDistribution.OnPauseGame -= PauseGame;

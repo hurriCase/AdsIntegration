@@ -8,7 +8,6 @@ namespace AdsIntegration.Runtime.Services.Azerion
     [Resource(FullSettingsPath, nameof(AzerionConfig), ResourceSettingsPath)]
     internal sealed class AzerionConfig : SingletonScriptableObject<AzerionConfig>
     {
-        [field: SerializeField] internal GameDistribution GameDistributionPrefab { get; private set; }
         [field: SerializeField] internal string GameKey { get; private set; }
 
         private const string FullSettingsPath = "Assets/Resources/" + ResourceSettingsPath;
