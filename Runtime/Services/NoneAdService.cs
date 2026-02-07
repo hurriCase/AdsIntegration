@@ -1,7 +1,9 @@
 ﻿using System;
 using AdsIntegration.Runtime.Base;
 using JetBrains.Annotations;
+using PrimeTween;
 using R3;
+using UnityEngine;
 
 namespace AdsIntegration.Runtime.Services
 {
@@ -9,10 +11,24 @@ namespace AdsIntegration.Runtime.Services
     public sealed class NoneAdService : IAdService
     {
         public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _isRewardedAdAvailabilityChanged;
-        private readonly ReactiveProperty<bool> _isRewardedAdAvailabilityChanged = new();
+        private readonly ReactiveProperty<bool> _isRewardedAdAvailabilityChanged = new(true);
+
+        private const float FakeAdsFinishDuration = 1f;
 
         public void Init() { }
-        public bool ShowRewardedAd(Enum placement, Action onRewarded) => false;
-        public bool TryShowInterstitial() => false;
+
+        public bool ShowRewardedAd(Enum placement, Action onRewarded)
+        {
+            onRewarded += () => Debug.Log($"[NoneAdService::ShowRewardedAd] Rewarded ads was shown for {placement}");
+
+            Tween.Delay(FakeAdsFinishDuration, onRewarded);
+            return true;
+        }
+
+        public bool TryShowInterstitial()
+        {
+            Debug.LogWarning("[NoneAdService::TryShowInterstitial] Interstitial ads was shown");
+            return true;
+        }
     }
 }
