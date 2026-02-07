@@ -21,7 +21,7 @@ namespace AdsIntegration.Runtime.Services
         {
             onRewarded += () => Debug.Log($"[NoneAdService::ShowRewardedAd] Rewarded ads was shown for {placement}");
 
-            Tween.Delay(FakeAdsFinishDuration, onRewarded);
+            Tween.Delay(FakeAdsFinishDuration, onRewarded, useUnscaledTime: true);
             return true;
         }
 
