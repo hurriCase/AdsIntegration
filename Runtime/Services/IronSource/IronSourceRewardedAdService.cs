@@ -9,7 +9,8 @@ namespace AdsIntegration.Runtime.Services.IronSource
 {
     internal sealed class IronSourceRewardedAdService : IRewardedAdService
     {
-        public event Action<bool> OnAdStatusChanged;
+        public ReadOnlyReactiveProperty<bool> IsAvailable => _isAvailable;
+        private readonly ReactiveProperty<bool> _isAvailable = new();
 
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
@@ -80,8 +81,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
                        $"Rewarded ad closed, unit: {levelPlayAdInfo.AdUnitName}");
 
             _currentRewardCallback = null;
-
-            OnAdStatusChanged?.Invoke(false);
+            _isAvailable.OnNext(false);
 
             LoadAd();
         }
@@ -93,8 +93,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
                             $" unit: {levelPlayAdError.AdUnitId}");
 
             _isAdLoading = false;
-
-            OnAdStatusChanged?.Invoke(false);
+            _isAvailable.OnNext(false);
 
             if (_loadAttemptCount >= _config.MaxRewardedLoadAttempts)
                 return;
@@ -111,8 +110,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
             _isAdLoading = false;
             _loadAttemptCount = 0;
-
-            OnAdStatusChanged?.Invoke(true);
+            _isAvailable.OnNext(true);
         }
 
         private void OnRewardAdDisplayFailed(LevelPlayAdInfo levelPlayAdInfo, LevelPlayAdError displayError)

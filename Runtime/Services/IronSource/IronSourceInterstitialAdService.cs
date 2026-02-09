@@ -10,8 +10,6 @@ namespace AdsIntegration.Runtime.Services.IronSource
 {
     internal sealed class IronSourceInterstitialAdService : IInterstitialAdService
     {
-        public event Action<string> OnInterstitialAdShowStarted;
-
         private readonly IAdInitializer _adInitializer;
         private readonly AdServiceConfig _config;
 

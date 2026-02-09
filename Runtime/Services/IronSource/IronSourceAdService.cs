@@ -23,7 +23,8 @@ namespace AdsIntegration.Runtime.Services.IronSource
         public ReadOnlyReactiveProperty<bool> IsRewardedAvailable => _isRewardedAvailable;
         private readonly ReactiveProperty<bool> _isRewardedAvailable = new();
 
-        private IDisposable _disposable;
+        private IDisposable _initializedSubscription;
+        private IDisposable _isAvailableSubscription;
 
         internal IronSourceAdService(AdServiceConfig config, IAdImpressionTracker adImpressionTracker)
         {
@@ -39,10 +40,11 @@ namespace AdsIntegration.Runtime.Services.IronSource
             _rewardedAdService = new IronSourceRewardedAdService(_adInitializer, _config);
             _interstitialAdService = new IronSourceInterstitialAdService(_adInitializer, _config);
 
-            _disposable = _adInitializer.OnInitializationCompleted
+            _initializedSubscription = _adInitializer.OnInitializationCompleted
                 .Subscribe(this, static (_, self) => self.EnableTestMode());
 
-            _rewardedAdService.OnAdStatusChanged += HandleRewardedAdStatusChanged;
+            _isAvailableSubscription = _rewardedAdService.IsAvailable
+                .Subscribe(this, static (isAvailable, self) => self.HandleRewardedAdStatusChanged(isAvailable));
 
             SceneManager.sceneLoaded += OnSceneLoaded;
 
@@ -87,7 +89,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
         private void ImpressionDataReadyEvent(LevelPlayImpressionData impressionData)
         {
-            Logger.Log("\"[IronSourceAdService::ImpressionDataReadyEvent] " +
+            Logger.Log("[IronSourceAdService::ImpressionDataReadyEvent] " +
                        $"ImpressionDataReadyEvent impressionData = {impressionData}");
 
             if (impressionData == null)
@@ -98,7 +100,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
         private void HandleRewardedAdStatusChanged(bool available)
         {
-            Logger.Log($"[IronSourceAdService::HandleRewardedAdStatusChanged] " +
+            Logger.Log("[IronSourceAdService::HandleRewardedAdStatusChanged] " +
                        $"Rewarded ad availability changed: {available}");
 
             _isRewardedAvailable.OnNext(available);
@@ -147,13 +149,12 @@ namespace AdsIntegration.Runtime.Services.IronSource
             Application.focusChanged -= OnApplicationFocusChanged;
             LevelPlay.OnImpressionDataReady -= ImpressionDataReadyEvent;
 
-            _rewardedAdService.OnAdStatusChanged -= HandleRewardedAdStatusChanged;
-
             _adInitializer?.Dispose();
             _rewardedAdService?.Dispose();
             _interstitialAdService?.Dispose();
             _adImpressionTracker?.Dispose();
-            _disposable?.Dispose();
+            _initializedSubscription?.Dispose();
+            _isAvailableSubscription?.Dispose();
         }
     }
 }
