@@ -4,7 +4,7 @@ using Unity.Services.LevelPlay;
 
 namespace AdsIntegration.Runtime.Services.IronSource
 {
-    internal sealed class IronSourceInitializer : IAdInitializer
+    internal sealed class LevelPlayInitializer : IAdInitializer
     {
         public bool IsInitialized { get; private set; }
 
@@ -13,14 +13,14 @@ namespace AdsIntegration.Runtime.Services.IronSource
         public Observable<Unit> OnInitializationCompleted => _initializationCompleted;
         private readonly Subject<Unit> _initializationCompleted = new();
 
-        public IronSourceInitializer(string appKey)
+        public LevelPlayInitializer(string appKey)
         {
             _appKey = appKey;
         }
 
         public void Init()
         {
-            Logger.Log($"[IronSourceInitializer::Init] Initializing IronSource SDK with app key: {_appKey}");
+            Logger.Log($"[LevelPlayInitializer::Init] Initializing IronSource SDK with app key: {_appKey}");
 
             LevelPlay.OnInitSuccess += SdkInitializationCompletedEvent;
             LevelPlay.OnInitFailed += SdkInitializationFailedEvent;
@@ -32,7 +32,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
         {
             IsInitialized = true;
 
-            Logger.Log("[IronSourceInitializer::SdkInitializationCompletedEvent] SDK initialized successfully");
+            Logger.Log("[LevelPlayInitializer::SdkInitializationCompletedEvent] SDK initialized successfully");
 
             _initializationCompleted.OnNext(Unit.Default);
         }
@@ -41,7 +41,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
         {
             IsInitialized = false;
 
-            Logger.LogError($"[IronSourceInitializer::SdkInitializationFailedEvent] " +
+            Logger.LogError($"[LevelPlayInitializer::SdkInitializationFailedEvent] " +
                             $"SDK initialization failed: {levelPlayInitError.ErrorMessage}");
         }
 
@@ -50,7 +50,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
             LevelPlay.OnInitSuccess -= SdkInitializationCompletedEvent;
             LevelPlay.OnInitFailed -= SdkInitializationFailedEvent;
 
-            Logger.Log("[IronSourceInitializer::Dispose] Disposed");
+            Logger.Log("[LevelPlayInitializer::Dispose] Disposed");
         }
     }
 }

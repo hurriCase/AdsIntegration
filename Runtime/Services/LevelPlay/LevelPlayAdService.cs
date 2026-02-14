@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 namespace AdsIntegration.Runtime.Services.IronSource
 {
     [PublicAPI]
-    public sealed class IronSourceAdService : IAdService, IDisposable
+    public sealed class LevelPlayAdService : IAdService, IDisposable
     {
         private readonly AdServiceConfig _config;
         private readonly IAdImpressionTracker _adImpressionTracker;
@@ -26,7 +26,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
         private IDisposable _initializedSubscription;
         private IDisposable _isAvailableSubscription;
 
-        internal IronSourceAdService(AdServiceConfig config, IAdImpressionTracker adImpressionTracker)
+        internal LevelPlayAdService(AdServiceConfig config, IAdImpressionTracker adImpressionTracker)
         {
             _config = config;
             _adImpressionTracker = adImpressionTracker;
@@ -34,11 +34,11 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
         public void Init()
         {
-            Logger.Log("[IronSourceAdService::Init] Initializing ad service");
+            Logger.Log("[LevelPlayAdService::Init] Initializing ad service");
 
-            _adInitializer = new IronSourceInitializer(_config.AppKey);
-            _rewardedAdService = new IronSourceRewardedAdService(_adInitializer, _config);
-            _interstitialAdService = new IronSourceInterstitialAdService(_adInitializer, _config);
+            _adInitializer = new LevelPlayInitializer(_config.AppKey);
+            _rewardedAdService = new LevelPlayRewardedAdService(_adInitializer, _config);
+            _interstitialAdService = new LevelPlayInterstitialAdService(_adInitializer, _config);
 
             _initializedSubscription = _adInitializer.OnInitializationCompleted
                 .Subscribe(this, static (_, self) => self.EnableTestMode());
@@ -62,12 +62,12 @@ namespace AdsIntegration.Runtime.Services.IronSource
         {
             if (_adInitializer.IsInitialized is false || IsRewardedAdAvailable() is false)
             {
-                Logger.LogWarning("[IronSourceAdService::ShowRewardedAd] Cannot show rewarded ad. Initialized:" +
+                Logger.LogWarning("[LevelPlayAdService::ShowRewardedAd] Cannot show rewarded ad. Initialized:" +
                                   $" {_adInitializer.IsInitialized}, Ad ready: {IsRewardedAdAvailable()}");
                 return false;
             }
 
-            Logger.Log("[IronSourceAdService::ShowRewardedAd] Showing rewarded ad for placement: {placementName}");
+            Logger.Log("[LevelPlayAdService::ShowRewardedAd] Showing rewarded ad for placement: {placementName}");
 
             _rewardedAdService.ShowAd(placementName, onRewarded);
 
@@ -81,7 +81,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
             if (_interstitialAdService.CanShowAd() is false)
                 return false;
 
-            Logger.Log("[IronSourceAdService::TryShowInterstitial] Showing interstitial ad");
+            Logger.Log("[LevelPlayAdService::TryShowInterstitial] Showing interstitial ad");
 
             _interstitialAdService.ShowAd();
             return true;
@@ -89,7 +89,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
         private void ImpressionDataReadyEvent(LevelPlayImpressionData impressionData)
         {
-            Logger.Log("[IronSourceAdService::ImpressionDataReadyEvent] " +
+            Logger.Log("[LevelPlayAdService::ImpressionDataReadyEvent] " +
                        $"ImpressionDataReadyEvent impressionData = {impressionData}");
 
             if (impressionData == null)
@@ -100,7 +100,7 @@ namespace AdsIntegration.Runtime.Services.IronSource
 
         private void HandleRewardedAdStatusChanged(bool available)
         {
-            Logger.Log("[IronSourceAdService::HandleRewardedAdStatusChanged] " +
+            Logger.Log("[LevelPlayAdService::HandleRewardedAdStatusChanged] " +
                        $"Rewarded ad availability changed: {available}");
 
             _isRewardedAvailable.OnNext(available);
@@ -134,13 +134,13 @@ namespace AdsIntegration.Runtime.Services.IronSource
         {
             if (_adInitializer.IsInitialized)
             {
-                Logger.Log("[IronSourceAdService::EnableTestMode] Launching test suite");
+                Logger.Log("[LevelPlayAdService::EnableTestMode] Launching test suite");
 
                 LevelPlay.LaunchTestSuite();
                 return;
             }
 
-            Logger.LogWarning("[IronSourceAdService::EnableTestMode] Cannot enable test mode - SDK not initialized");
+            Logger.LogWarning("[LevelPlayAdService::EnableTestMode] Cannot enable test mode - SDK not initialized");
         }
 
         public void Dispose()
